@@ -57,6 +57,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
+  const [showWasteModal, setShowWasteModal] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -247,11 +248,17 @@ export default function App() {
             We'll craft the perfect recipes — tailored just for you.
           </p>
           <div className="hero-stats">
-            <div className="stat"><span>3</span><p>Recipes per search</p></div>
-            <div className="stat-divider" />
-            <div className="stat"><span>AI</span><p>Powered by Ollama</p></div>
-            <div className="stat-divider" />
-            <div className="stat"><span>{heroWastePct}%</span><p>Food waste</p></div>
+            <button type="button" className="stat stat-button" onClick={() => setShowWasteModal(true)}>
+              <div>
+                <span>{heroWastePct}%</span>
+                <p>Food waste</p>
+              </div>
+              <div className="hero-stat">
+                <button button type="button" className="stat stat-button" onClick={() => setShowWasteModal(true)}>
+                <span>Track Now</span>
+                </button>
+              </div>
+              </button>
           </div>
         </div>
         <div className="hero-visual">
@@ -279,19 +286,20 @@ export default function App() {
 
           <div className="panels-grid">
             <div className={`panel-wrapper ${activeTab === 'ingredients' ? 'panel-visible' : 'panel-hidden'}`}>
-              <IngredientPanel ingredients={ingredients} onChange={setIngredients} />
-              <ImageUploadPanel
-                analyzing={imageLoading}
-                imageAnalysis={imageAnalysis}
-                recipeLoading={loading && !imageLoading}
-                onAnalyze={handleImageAnalyze}
-                onAnalysisChange={setImageAnalysis}
-                onUseCorrected={handleUseCorrectedAnalysis}
-              />
+              <div className="top-panels-grid">
+                <IngredientPanel ingredients={ingredients} onChange={setIngredients} />
+                <ImageUploadPanel
+                  analyzing={imageLoading}
+                  imageAnalysis={imageAnalysis}
+                  recipeLoading={loading && !imageLoading}
+                  onAnalyze={handleImageAnalyze}
+                  onAnalysisChange={setImageAnalysis}
+                  onUseCorrected={handleUseCorrectedAnalysis}
+                />
+              </div>
             </div>
             <div className={`panel-wrapper ${activeTab === 'health' ? 'panel-visible' : 'panel-hidden'}`}>
               <HealthPanel profile={health} onChange={setHealth} />
-              <WasteTracker stats={wasteStats} onReset={resetWasteStats} />
             </div>
           </div>
 
@@ -400,6 +408,26 @@ export default function App() {
       {/* ── SHOPPING LIST MODAL ── */}
       {showShoppingList && (
         <ShoppingList recipes={recipes} onClose={() => setShowShoppingList(false)} />
+      )}
+
+      {showWasteModal && (
+        <div className="modal-backdrop" onClick={() => setShowWasteModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-row">
+                <span>💚</span>
+                <div>
+                  <h2 className="modal-title">Food Waste Tracker</h2>
+                  <p className="modal-sub">Your waste analytics for PantryPal</p>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => setShowWasteModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <WasteTracker stats={wasteStats} onReset={resetWasteStats} />
+            </div>
+          </div>
+        </div>
       )}
 
       <footer className="footer">
