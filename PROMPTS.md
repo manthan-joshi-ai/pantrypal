@@ -46,7 +46,7 @@ All prompts used in the session that built this application from scratch.
 
 ## 6. Cleanup
 
-> "Remove HSBC Hackathon from the code and md file!"
+> "Remove hackathon branding from the code and md file!"
 
 > "year is wrong it is taking 2025"
 
