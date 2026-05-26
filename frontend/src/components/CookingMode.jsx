@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
-export default function CookingMode({ recipe, servings, onClose }) {
+export default function CookingMode({ recipe, servings, onClose, onComplete, onAbandon }) {
   const [step, setStep] = useState(0);
+  const [completed, setCompleted] = useState(false);
+  const completedRef = useRef(false);
+  const abandonedRef = useRef(false);
   const steps = recipe.instructions || [];
   const total = steps.length;
-  const progress = Math.round(((step + 1) / total) * 100);
+  const progress = total > 0 ? Math.round(((step + 1) / total) * 100) : 0;
 
   // Keep screen awake
   useEffect(() => {
@@ -21,15 +24,31 @@ export default function CookingMode({ recipe, servings, onClose }) {
   const handleKey = useCallback((e) => {
     if (e.key === 'ArrowRight' && step < total - 1) setStep(s => s + 1);
     if (e.key === 'ArrowLeft' && step > 0) setStep(s => s - 1);
-    if (e.key === 'Escape') onClose();
-  }, [step, total, onClose]);
+    if (e.key === 'Escape') abandonRecipe();
+  }, [step, total]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  const isDone = step === total - 1;
+  const isDone = total > 0 && step === total - 1;
+  const finishRecipe = () => {
+    if (!completedRef.current) {
+      completedRef.current = true;
+      onComplete?.(recipe, servings);
+      setCompleted(true);
+    }
+    onClose();
+  };
+
+  const abandonRecipe = () => {
+    if (!completedRef.current && !abandonedRef.current) {
+      abandonedRef.current = true;
+      onAbandon?.(recipe, servings);
+    }
+    onClose();
+  };
 
   return (
     <div className="cooking-overlay">
@@ -42,7 +61,7 @@ export default function CookingMode({ recipe, servings, onClose }) {
             <p className="cm-servings">Serves {servings}</p>
           </div>
         </div>
-        <button className="cm-close" onClick={onClose}>✕ Exit</button>
+        <button className="cm-close" onClick={abandonRecipe}>Discard / Exit</button>
       </div>
 
       {/* Progress bar */}
@@ -70,7 +89,9 @@ export default function CookingMode({ recipe, servings, onClose }) {
           <div className="cm-done">
             <div className="cm-done-icon">🎉</div>
             <h3>You're done! Enjoy your meal.</h3>
-            <button className="cm-finish-btn" onClick={onClose}>Back to Recipe</button>
+            <button className="cm-finish-btn" onClick={finishRecipe}>
+              {completed ? 'Back to Recipe' : 'Mark Done'}
+            </button>
           </div>
         )}
       </div>
@@ -103,7 +124,7 @@ export default function CookingMode({ recipe, servings, onClose }) {
         </div>
       )}
 
-      <p className="cm-hint">Use ← → arrow keys to navigate</p>
+      <p className="cm-hint">Use ← → arrow keys to navigate. Exiting before Mark Done counts this recipe as waste.</p>
     </div>
   );
 }

@@ -35,6 +35,8 @@ services:
 
     environment:
       OLLAMA_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: phi3:mini
+      OLLAMA_VISION_MODEL: llava:7b
     
     extra_hosts:
       - "host.docker.internal:host-gateway"

@@ -1,26 +1,58 @@
 import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import IngredientPanel from './components/IngredientPanel';
+import ImageUploadPanel from './components/ImageUploadPanel';
 import HealthPanel from './components/HealthPanel';
 import RecipeCard from './components/RecipeCard';
 import ShoppingList from './components/ShoppingList';
-import { getRecommendations } from './services/api';
+import WasteTracker from './components/WasteTracker';
+import { getImageRecommendations, getRecommendations } from './services/api';
 import './App.css';
 
 const DEFAULT_HEALTH = { chronic: [], dietary: [], lifestyle: [], notes: '' };
+const DEFAULT_WASTE = {
+  completedRecipes: 0,
+  ingredientsSaved: 0,
+  servingsCooked: 0,
+  discardedRecipes: 0,
+  lastRecipe: '',
+  lastWasteRecipe: '',
+  possibleWasteItems: 0,
+  leftoverItems: 0,
+  history: [],
+};
 
 const loadSaved = () => {
   try { return JSON.parse(localStorage.getItem('pp-saved') || '[]'); }
   catch { return []; }
 };
 
+const loadWaste = () => {
+  try { return { ...DEFAULT_WASTE, ...JSON.parse(localStorage.getItem('pp-waste') || '{}') }; }
+  catch { return DEFAULT_WASTE; }
+};
+
+const analysisToIngredients = (items) => (
+  items
+    .map((item, index) => ({
+      id: `review-${Date.now()}-${index}`,
+      name: (item.name || '').trim(),
+      quantity: (item.estimated_quantity || item.quantity || '').trim(),
+      unit: (item.unit || '').trim(),
+    }))
+    .filter(item => item.name)
+);
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('pp-theme') || 'dark');
   const [ingredients, setIngredients] = useState([]);
   const [health, setHealth] = useState(DEFAULT_HEALTH);
   const [recipes, setRecipes] = useState([]);
+  const [imageAnalysis, setImageAnalysis] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState(loadSaved);
+  const [wasteStats, setWasteStats] = useState(loadWaste);
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
@@ -49,6 +81,78 @@ export default function App() {
 
   const isSaved = (recipe) => savedRecipes.some(r => r.name === recipe.name);
 
+  const getRecipeWasteScope = (recipe) => {
+    const pantryItems = recipe.ingredients_used?.length || 0;
+    const possibleWasteItems = Math.max(
+      ingredients.length,
+      pantryItems + (recipe.additional_ingredients?.length || 0),
+      pantryItems,
+    );
+    return { pantryItems, possibleWasteItems };
+  };
+
+  const updateWasteStats = (recipe, servings) => {
+    const { pantryItems, possibleWasteItems } = getRecipeWasteScope(recipe);
+    const leftoverItems = Math.max(0, possibleWasteItems - pantryItems);
+    const event = {
+      id: `${Date.now()}-${recipe.name}`,
+      date: new Date().toISOString(),
+      status: 'completed',
+      recipeName: recipe.name,
+      ingredientsUsed: pantryItems,
+      possibleWasteItems,
+      leftoverItems,
+      servings,
+    };
+
+    setWasteStats(prev => {
+      const updated = {
+        ...prev,
+        completedRecipes: prev.completedRecipes + 1,
+        ingredientsSaved: prev.ingredientsSaved + pantryItems,
+        servingsCooked: prev.servingsCooked + servings,
+        lastRecipe: recipe.name,
+        possibleWasteItems: (prev.possibleWasteItems || 0) + possibleWasteItems,
+        leftoverItems: (prev.leftoverItems || 0) + leftoverItems,
+        history: [...(prev.history || []), event],
+      };
+      localStorage.setItem('pp-waste', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const recordRecipeWaste = (recipe) => {
+    const { possibleWasteItems } = getRecipeWasteScope(recipe);
+    const event = {
+      id: `${Date.now()}-${recipe.name}-discarded`,
+      date: new Date().toISOString(),
+      status: 'discarded',
+      recipeName: recipe.name,
+      ingredientsUsed: 0,
+      possibleWasteItems,
+      leftoverItems: possibleWasteItems,
+      servings: 0,
+    };
+
+    setWasteStats(prev => {
+      const updated = {
+        ...prev,
+        discardedRecipes: (prev.discardedRecipes || 0) + 1,
+        lastWasteRecipe: recipe.name,
+        possibleWasteItems: (prev.possibleWasteItems || 0) + possibleWasteItems,
+        leftoverItems: (prev.leftoverItems || 0) + possibleWasteItems,
+        history: [...(prev.history || []), event],
+      };
+      localStorage.setItem('pp-waste', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const resetWasteStats = () => {
+    localStorage.removeItem('pp-waste');
+    setWasteStats(DEFAULT_WASTE);
+  };
+
   const handleFind = async () => {
     if (ingredients.length === 0) {
       setError('Add at least one ingredient to your pantry.');
@@ -57,6 +161,7 @@ export default function App() {
     setLoading(true);
     setError('');
     setRecipes([]);
+    setImageAnalysis([]);
     setResultsView('results');
     try {
       const data = await getRecommendations(ingredients, health);
@@ -71,8 +176,59 @@ export default function App() {
     }
   };
 
+  const handleUseCorrectedAnalysis = async () => {
+    const correctedIngredients = analysisToIngredients(imageAnalysis);
+    if (correctedIngredients.length === 0) {
+      setError('Keep at least one corrected ingredient before updating recipes.');
+      return;
+    }
+    setIngredients(correctedIngredients);
+    setLoading(true);
+    setError('');
+    setRecipes([]);
+    setResultsView('results');
+    try {
+      const data = await getRecommendations(correctedIngredients, health);
+      setRecipes(data.recipes || []);
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (e) {
+      setError(e.message || 'Could not update recipes from the corrected analysis.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageAnalyze = async (file) => {
+    setImageLoading(true);
+    setLoading(true);
+    setError('');
+    setRecipes([]);
+    setImageAnalysis([]);
+    setResultsView('results');
+    try {
+      const data = await getImageRecommendations(file, health);
+      const found = data.ingredients || [];
+      setImageAnalysis(data.image_analysis || found);
+      setIngredients(found);
+      setRecipes(data.recipes || []);
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (e) {
+      setError(e.message || 'Could not analyze the image. Please try another photo.');
+    } finally {
+      setImageLoading(false);
+      setLoading(false);
+    }
+  };
+
   const totalHealth = health.chronic.length + health.dietary.length + health.lifestyle.length;
   const displayedRecipes = resultsView === 'saved' ? savedRecipes : recipes;
+  const heroWastePct = wasteStats.possibleWasteItems
+    ? Math.round(((wasteStats.leftoverItems || 0) / wasteStats.possibleWasteItems) * 100)
+    : 0;
 
   return (
     <div className="app">
@@ -93,9 +249,9 @@ export default function App() {
           <div className="hero-stats">
             <div className="stat"><span>3</span><p>Recipes per search</p></div>
             <div className="stat-divider" />
-            <div className="stat"><span>AI</span><p>Powered by MiniMax</p></div>
+            <div className="stat"><span>AI</span><p>Powered by Ollama</p></div>
             <div className="stat-divider" />
-            <div className="stat"><span>0%</span><p>Food waste</p></div>
+            <div className="stat"><span>{heroWastePct}%</span><p>Food waste</p></div>
           </div>
         </div>
         <div className="hero-visual">
@@ -124,9 +280,18 @@ export default function App() {
           <div className="panels-grid">
             <div className={`panel-wrapper ${activeTab === 'ingredients' ? 'panel-visible' : 'panel-hidden'}`}>
               <IngredientPanel ingredients={ingredients} onChange={setIngredients} />
+              <ImageUploadPanel
+                analyzing={imageLoading}
+                imageAnalysis={imageAnalysis}
+                recipeLoading={loading && !imageLoading}
+                onAnalyze={handleImageAnalyze}
+                onAnalysisChange={setImageAnalysis}
+                onUseCorrected={handleUseCorrectedAnalysis}
+              />
             </div>
             <div className={`panel-wrapper ${activeTab === 'health' ? 'panel-visible' : 'panel-hidden'}`}>
               <HealthPanel profile={health} onChange={setHealth} />
+              <WasteTracker stats={wasteStats} onReset={resetWasteStats} />
             </div>
           </div>
 
@@ -208,6 +373,8 @@ export default function App() {
                   index={i}
                   saved={isSaved(r)}
                   onToggleSave={toggleSave}
+                  onRecipeDone={updateWasteStats}
+                  onRecipeAbandoned={recordRecipeWaste}
                 />
               ))}
             </div>
@@ -238,7 +405,7 @@ export default function App() {
       <footer className="footer">
         <span>🥘 PantryPal</span>
         <span>·</span>
-        <span>Powered by MiniMax AI on AWS Bedrock</span>
+        <span>Powered by Ollama AI</span>
         <span>·</span>
         <span>2026</span>
       </footer>

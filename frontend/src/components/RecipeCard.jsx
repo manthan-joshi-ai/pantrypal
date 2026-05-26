@@ -18,7 +18,7 @@ const scaleNutr = (val, factor) => {
   return val.replace(/(\d+\.?\d*)/g, (_, n) => Math.round(parseFloat(n) * factor));
 };
 
-export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
+export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecipeDone, onRecipeAbandoned }) {
   const [open, setOpen] = useState(index === 0);
   const [servings, setServings] = useState(recipe.servings || 2);
   const [cooking, setCooking] = useState(false);
@@ -28,6 +28,11 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   const factor = servings / baseSrv;
 
   const nutr = recipe.nutritional_info;
+  const canCook = recipe.instructions?.length > 0;
+  const startCooking = (event) => {
+    event?.stopPropagation();
+    setCooking(true);
+  };
 
   return (
     <>
@@ -74,6 +79,11 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
           <div className="rcard-strip-item diff-item" style={{ color: diff.color, background: diff.bg }}>
             {diff.label}
           </div>
+          {canCook && (
+            <button className="strip-cooking-btn" onClick={startCooking}>
+              Start Cooking
+            </button>
+          )}
         </div>
 
         {/* Health tags */}
@@ -174,8 +184,8 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
             </div>
 
             {/* Start Cooking button */}
-            {recipe.instructions?.length > 0 && (
-              <button className="start-cooking-btn" onClick={() => setCooking(true)}>
+            {canCook && (
+              <button className="start-cooking-btn" onClick={startCooking}>
                 👨‍🍳 Start Cooking Mode
               </button>
             )}
@@ -184,7 +194,13 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
       </div>
 
       {cooking && (
-        <CookingMode recipe={recipe} servings={servings} onClose={() => setCooking(false)} />
+        <CookingMode
+          recipe={recipe}
+          servings={servings}
+          onClose={() => setCooking(false)}
+          onComplete={onRecipeDone}
+          onAbandon={onRecipeAbandoned}
+        />
       )}
     </>
   );

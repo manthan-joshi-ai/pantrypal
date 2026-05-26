@@ -1,11 +1,77 @@
 import json
 import re
 import os
+import base64
+import io
 import requests
-from models import RecommendRequest, RecommendResponse, Recipe, NutritionalInfo
+from models import (
+    ImageAnalysisItem,
+    Ingredient,
+    NutritionalInfo,
+    Recipe,
+    RecommendRequest,
+    RecommendResponse,
+)
 
-OLLAMA_URL = "http://host.docker.internal:11434/api/generate"
+OLLAMA_BASE_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
+OLLAMA_URL = (
+    OLLAMA_BASE_URL
+    if OLLAMA_BASE_URL.endswith("/api/generate")
+    else f"{OLLAMA_BASE_URL}/api/generate"
+)
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "phi3:mini")
+OLLAMA_VISION_MODEL = os.getenv("OLLAMA_VISION_MODEL", "llava:7b")
+
+
+def _extract_json(raw: str) -> dict:
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if not match:
+            raise ValueError(f"Model returned invalid JSON: {raw[:300]}")
+        return json.loads(match.group())
+
+
+def _as_list(value) -> list:
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    return []
+
+
+def _as_string_list(value) -> list[str]:
+    return [str(item).strip() for item in _as_list(value) if str(item).strip()]
+
+
+def _as_int(value, fallback: int = 2) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _clean_name(value) -> str:
+    return " ".join(str(value or "").strip().split())
+
+
+def _prepare_image_for_vision(image_bytes: bytes) -> bytes:
+    try:
+        from PIL import Image
+    except ImportError:
+        return image_bytes
+
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as image:
+            image.thumbnail((1024, 1024))
+            if image.mode not in ("RGB", "L"):
+                image = image.convert("RGB")
+            output = io.BytesIO()
+            image.save(output, format="JPEG", quality=82, optimize=True)
+            return output.getvalue()
+    except Exception:
+        return image_bytes
 
 
 def _build_prompt(req: RecommendRequest) -> str:
@@ -82,37 +148,153 @@ def get_recommendations(req: RecommendRequest) -> RecommendResponse:
 
     raw = resp.json().get("response", "")
 
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        match = re.search(r'\{.*\}', raw, re.DOTALL)
-        if not match:
-            raise ValueError(f"Model returned invalid JSON: {raw[:300]}")
-        data = json.loads(match.group())
+    data = _extract_json(raw)
 
-    raw_recipes = data.get("recipes", [])
+    if not isinstance(data, dict):
+        raise ValueError("Model returned an unexpected recipe format")
+
+    raw_recipes = _as_list(data.get("recipes", []))
     if not raw_recipes:
         raise ValueError("Model returned no recipes")
 
     recipes = []
     for r in raw_recipes:
+        if not isinstance(r, dict):
+            continue
+
         ni = r.get("nutritional_info")
+        nutrition = NutritionalInfo(**ni) if isinstance(ni, dict) else None
         recipes.append(Recipe(
-            name=r.get("name", ""),
-            cuisine=r.get("cuisine", ""),
-            description=r.get("description", ""),
-            health_benefits=r.get("health_benefits", []),
-            why_good_for_you=r.get("why_good_for_you", ""),
-            prep_time=r.get("prep_time", ""),
-            cook_time=r.get("cook_time", ""),
-            difficulty=r.get("difficulty", "Medium"),
-            servings=int(r.get("servings", 2)),
-            ingredients_used=r.get("ingredients_used", []),
-            additional_ingredients=r.get("additional_ingredients", []),
-            instructions=r.get("instructions", []),
-            nutritional_info=NutritionalInfo(**ni) if ni else None,
-            health_tags=r.get("health_tags", []),
-            tips=r.get("tips", ""),
+            name=str(r.get("name") or "Recipe").strip(),
+            cuisine=str(r.get("cuisine") or "Any").strip(),
+            description=str(r.get("description") or "").strip(),
+            health_benefits=_as_string_list(r.get("health_benefits", [])),
+            why_good_for_you=str(r.get("why_good_for_you") or "").strip(),
+            prep_time=str(r.get("prep_time") or "").strip(),
+            cook_time=str(r.get("cook_time") or "").strip(),
+            difficulty=str(r.get("difficulty") or "Medium").strip(),
+            servings=_as_int(r.get("servings"), 2),
+            ingredients_used=_as_string_list(r.get("ingredients_used", [])),
+            additional_ingredients=_as_string_list(r.get("additional_ingredients", [])),
+            instructions=_as_string_list(r.get("instructions", [])),
+            nutritional_info=nutrition,
+            health_tags=_as_string_list(r.get("health_tags", [])),
+            tips=str(r.get("tips") or "").strip(),
         )
     )
+    if not recipes:
+        raise ValueError("Model returned no usable recipes")
     return RecommendResponse(recipes=recipes)
+
+
+def analyze_food_image(image_bytes: bytes) -> tuple[list[Ingredient], list[ImageAnalysisItem]]:
+    vision_image = _prepare_image_for_vision(image_bytes)
+    payload = {
+        "model": OLLAMA_VISION_MODEL,
+        "prompt": """You are analyzing a food, pantry, fridge, or plate image for a recipe app.
+Identify visible edible ingredients and pantry items. Prefer raw ingredient names over dish names when possible.
+Estimate quantity only when visually reasonable; otherwise leave it blank.
+
+Respond with ONLY valid JSON, no markdown or extra text:
+{
+  "ingredients": [
+    {
+      "name": "tomato",
+      "estimated_quantity": "2",
+      "unit": "pcs",
+      "confidence": "high",
+      "category": "vegetable",
+      "notes": "ripe red tomatoes"
+    }
+  ]
+}
+Only include items you can reasonably see. Use common ingredient names, not brand names.
+Use confidence values: high, medium, or low.""",
+        "images": [base64.b64encode(vision_image).decode("utf-8")],
+        "stream": False,
+        "format": "json",
+    }
+
+    try:
+        resp = requests.post(OLLAMA_URL, json=payload, timeout=120)
+        resp.raise_for_status()
+    except requests.exceptions.ConnectionError:
+        raise ValueError("Ollama is not running. Start it with: ollama serve")
+    except requests.exceptions.Timeout:
+        raise ValueError("Image recognition timed out after 120s")
+    except requests.exceptions.HTTPError as e:
+        detail = e.response.text
+        if "model runner has unexpectedly stopped" in detail:
+            raise ValueError(
+                "Ollama vision model crashed while analyzing the image. "
+                "The app compressed the image, but the selected vision model may still be too heavy. "
+                "Try a smaller Ollama vision model such as moondream, or use the manual photo-analysis editor."
+            )
+        raise ValueError(f"Ollama vision error: {detail}")
+
+    raw = resp.json().get("response", "")
+    data = _extract_json(raw)
+    if isinstance(data, dict):
+        raw_ingredients = data.get("ingredients", [])
+    elif isinstance(data, list):
+        raw_ingredients = data
+    else:
+        raw_ingredients = []
+
+    seen = set()
+    ingredients = []
+    image_analysis = []
+    for item in _as_list(raw_ingredients):
+        if isinstance(item, str):
+            name = item
+            estimated_quantity = ""
+            unit = ""
+            confidence = ""
+            category = ""
+            notes = ""
+        elif isinstance(item, dict):
+            name = (
+                item.get("name")
+                or item.get("ingredient")
+                or item.get("food")
+                or item.get("item")
+                or ""
+            )
+            estimated_quantity = item.get("estimated_quantity") or item.get("quantity") or ""
+            unit = item.get("unit", "")
+            confidence = item.get("confidence", "")
+            category = item.get("category", "")
+            notes = item.get("notes") or item.get("description") or ""
+        else:
+            continue
+
+        cleaned = _clean_name(name)
+        key = cleaned.lower()
+        if not cleaned or key in seen:
+            continue
+        seen.add(key)
+        quantity = _clean_name(estimated_quantity)
+        clean_unit = _clean_name(unit)
+        ingredients.append(Ingredient(
+            id=f"img-{len(ingredients) + 1}",
+            name=cleaned,
+            quantity=quantity,
+            unit=clean_unit,
+        ))
+        image_analysis.append(ImageAnalysisItem(
+            name=cleaned,
+            estimated_quantity=quantity,
+            unit=clean_unit,
+            confidence=_clean_name(confidence).lower(),
+            category=_clean_name(category),
+            notes=_clean_name(notes),
+        ))
+
+    if not ingredients:
+        raise ValueError("No recognizable food items found in the image")
+    return ingredients, image_analysis
+
+
+def recognize_ingredients(image_bytes: bytes) -> list[Ingredient]:
+    ingredients, _ = analyze_food_image(image_bytes)
+    return ingredients
