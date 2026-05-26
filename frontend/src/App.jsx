@@ -3,17 +3,28 @@ import Header from './components/Header';
 import IngredientPanel from './components/IngredientPanel';
 import HealthPanel from './components/HealthPanel';
 import RecipeCard from './components/RecipeCard';
+import ShoppingList from './components/ShoppingList';
 import { getRecommendations } from './services/api';
 import './App.css';
 
 const DEFAULT_HEALTH = { chronic: [], dietary: [], lifestyle: [], notes: '' };
+
+const loadSaved = () => {
+  try { return JSON.parse(localStorage.getItem('pp-saved') || '[]'); }
+  catch { return []; }
+};
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('pp-theme') || 'dark');
   const [ingredients, setIngredients] = useState([]);
   const [health, setHealth] = useState(DEFAULT_HEALTH);
   const [recipes, setRecipes] = useState([]);
+  const [savedRecipes, setSavedRecipes] = useState(loadSaved);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('ingredients');
+  const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
+  const [showShoppingList, setShowShoppingList] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -24,8 +35,19 @@ export default function App() {
     setTheme(next);
     localStorage.setItem('pp-theme', next);
   };
-  const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('ingredients');
+
+  const toggleSave = (recipe) => {
+    setSavedRecipes(prev => {
+      const exists = prev.find(r => r.name === recipe.name);
+      const updated = exists
+        ? prev.filter(r => r.name !== recipe.name)
+        : [...prev, recipe];
+      localStorage.setItem('pp-saved', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const isSaved = (recipe) => savedRecipes.some(r => r.name === recipe.name);
 
   const handleFind = async () => {
     if (ingredients.length === 0) {
@@ -35,6 +57,7 @@ export default function App() {
     setLoading(true);
     setError('');
     setRecipes([]);
+    setResultsView('results');
     try {
       const data = await getRecommendations(ingredients, health);
       setRecipes(data.recipes || []);
@@ -49,6 +72,7 @@ export default function App() {
   };
 
   const totalHealth = health.chronic.length + health.dietary.length + health.lifestyle.length;
+  const displayedRecipes = resultsView === 'saved' ? savedRecipes : recipes;
 
   return (
     <div className="app">
@@ -88,19 +112,11 @@ export default function App() {
       {/* ── INPUT SECTION ── */}
       <section className="input-section">
         <div className="input-wrapper">
-
-          {/* Tab switcher (mobile) */}
           <div className="tab-bar">
-            <button
-              className={`tab-btn ${activeTab === 'ingredients' ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab('ingredients')}
-            >
+            <button className={`tab-btn ${activeTab === 'ingredients' ? 'tab-active' : ''}`} onClick={() => setActiveTab('ingredients')}>
               🥦 Ingredients {ingredients.length > 0 && <span className="tab-count">{ingredients.length}</span>}
             </button>
-            <button
-              className={`tab-btn ${activeTab === 'health' ? 'tab-active' : ''}`}
-              onClick={() => setActiveTab('health')}
-            >
+            <button className={`tab-btn ${activeTab === 'health' ? 'tab-active' : ''}`} onClick={() => setActiveTab('health')}>
               🩺 Health Profile {totalHealth > 0 && <span className="tab-count">{totalHealth}</span>}
             </button>
           </div>
@@ -116,22 +132,15 @@ export default function App() {
 
           {error && <div className="error-toast">⚠ {error}</div>}
 
-          {/* CTA */}
           <div className="cta-area">
             <div className="cta-meta">
               <div className="cta-pill">🧺 {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}</div>
               {totalHealth > 0 && <div className="cta-pill cta-pill--green">🩺 {totalHealth} health filter{totalHealth !== 1 ? 's' : ''}</div>}
             </div>
-            <button
-              className="btn-cta"
-              onClick={handleFind}
-              disabled={loading || ingredients.length === 0}
-            >
-              {loading ? (
-                <><span className="cta-spinner" /> Finding your recipes…</>
-              ) : (
-                <><span className="cta-icon">✨</span> Find My Recipes</>
-              )}
+            <button className="btn-cta" onClick={handleFind} disabled={loading || ingredients.length === 0}>
+              {loading
+                ? <><span className="cta-spinner" /> Finding your recipes…</>
+                : <><span className="cta-icon">✨</span> Find My Recipes</>}
             </button>
           </div>
         </div>
@@ -140,10 +149,7 @@ export default function App() {
       {/* ── LOADING ── */}
       {loading && (
         <section className="loading-section">
-          <div className="loading-label">
-            <span className="pulse-dot" />
-            PantryPal is crafting your personalised recipes…
-          </div>
+          <div className="loading-label"><span className="pulse-dot" /> PantryPal is crafting your personalised recipes…</div>
           <div className="skeleton-grid">
             {[0,1,2].map(i => <div key={i} className="skeleton-card" style={{ animationDelay: `${i * 0.15}s` }} />)}
           </div>
@@ -151,25 +157,66 @@ export default function App() {
       )}
 
       {/* ── RESULTS ── */}
-      {recipes.length > 0 && !loading && (
+      {(recipes.length > 0 || savedRecipes.length > 0) && !loading && (
         <section className="results-section" id="results">
           <div className="results-header">
-            <div className="results-label">✦ Your Personalised Menu</div>
+            {/* View tabs */}
+            <div className="results-tabs">
+              <button
+                className={`results-tab ${resultsView === 'results' ? 'results-tab--active' : ''}`}
+                onClick={() => setResultsView('results')}
+                disabled={recipes.length === 0}
+              >
+                🍽 Recipes {recipes.length > 0 && <span className="rtab-count">{recipes.length}</span>}
+              </button>
+              <button
+                className={`results-tab ${resultsView === 'saved' ? 'results-tab--active' : ''}`}
+                onClick={() => setResultsView('saved')}
+              >
+                ❤️ Saved {savedRecipes.length > 0 && <span className="rtab-count">{savedRecipes.length}</span>}
+              </button>
+              {resultsView === 'results' && recipes.length > 0 && (
+                <button className="shopping-btn" onClick={() => setShowShoppingList(true)}>
+                  🛒 Shopping List
+                </button>
+              )}
+            </div>
+
             <h2 className="results-title">
-              {recipes.length} Healthy Recipes Found
+              {resultsView === 'saved'
+                ? `${savedRecipes.length} Saved Recipe${savedRecipes.length !== 1 ? 's' : ''}`
+                : `${recipes.length} Healthy Recipes Found`}
             </h2>
             <p className="results-sub">
-              Based on your pantry{totalHealth > 0 ? ' & health profile' : ''} — click any card to explore
+              {resultsView === 'saved'
+                ? 'Your favourites — ready to cook anytime'
+                : `Based on your pantry${totalHealth > 0 ? ' & health profile' : ''} — click any card to explore`}
             </p>
           </div>
-          <div className="recipes-grid">
-            {recipes.map((r, i) => <RecipeCard key={i} recipe={r} index={i} />)}
-          </div>
+
+          {resultsView === 'saved' && savedRecipes.length === 0 ? (
+            <div className="saved-empty">
+              <span>💔</span>
+              <p>No saved recipes yet. Hit the heart on any recipe to save it!</p>
+            </div>
+          ) : (
+            <div className="recipes-grid">
+              {displayedRecipes.map((r, i) => (
+                <RecipeCard
+                  key={r.name + i}
+                  recipe={r}
+                  index={i}
+                  saved={isSaved(r)}
+                  onToggleSave={toggleSave}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
       {/* ── EMPTY STATE ── */}
-      {recipes.length === 0 && !loading && (
+      {recipes.length === 0 && savedRecipes.length === 0 && !loading && (
         <section className="empty-section">
           <div className="empty-card">
             <div className="empty-emojis">
@@ -181,6 +228,11 @@ export default function App() {
             <p>Add ingredients from your pantry, set your health preferences, and let PantryPal do the magic.</p>
           </div>
         </section>
+      )}
+
+      {/* ── SHOPPING LIST MODAL ── */}
+      {showShoppingList && (
+        <ShoppingList recipes={recipes} onClose={() => setShowShoppingList(false)} />
       )}
 
       <footer className="footer">
