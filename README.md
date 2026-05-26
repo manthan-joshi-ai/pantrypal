@@ -1,23 +1,57 @@
-# 🥘 PantryPal
+# PantryPal
 
-> **Turn your leftovers into healthy masterpieces — powered by AI.**
+Turn pantry ingredients and food photos into healthy recipe ideas, nutrition guidance, cooking mode, and food-waste insights.
 
-PantryPal is a full-stack AI web app that turns your leftover ingredients into personalised healthy recipes. Add what you have at home, upload a food photo, share your health conditions, and get 3 tailored recipes instantly — powered by local **Ollama** models.
+PantryPal is a full-stack AI web app powered by local Ollama models. Users can type ingredients, upload a pantry or plate photo, correct the image analysis, generate personalized recipes, cook step-by-step, and track consumption vs food waste over time.
 
----
+## Features
 
-## 🚀 Quick Start
+- Ingredient input with quick-add chips, quantities, and units.
+- Food photo upload with Ollama vision recognition.
+- Editable photo-analysis review so users can correct, remove, or add detected ingredients before regenerating recipes.
+- Health profile filters for chronic conditions, dietary needs, lifestyle preferences, and notes.
+- AI recipe recommendations with instructions, health tags, nutrition estimates, and tips.
+- Cooking Mode for every recipe, including serving adjustment and step navigation.
+- Food waste analytics:
+  - Completed recipes count as consumed.
+  - Recipes exited before `Mark Done` count as discarded waste.
+  - Weekly, monthly, and yearly consumption/waste charts.
+  - Numeric food waste and consumed percentages.
+- Saved recipes and shopping-list helper.
 
-**Backend**
+## Quick Start
+
+### 1. Start Ollama
+
+Install Ollama, then pull a recipe model and a vision model:
+
+```bash
+ollama pull phi3:mini
+ollama pull llava:7b
+ollama serve
+```
+
+If `llava:7b` crashes on your machine, try a smaller vision model:
+
+```bash
+ollama pull moondream
+export OLLAMA_VISION_MODEL=moondream
+```
+
+### 2. Backend
+
 ```bash
 cd backend
 pip install -r requirements.txt
 export OLLAMA_MODEL="phi3:mini"
 export OLLAMA_VISION_MODEL="llava:7b"
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-**Frontend**
+The backend compresses uploaded images with Pillow before sending them to Ollama vision to reduce model-runner crashes.
+
+### 3. Frontend
+
 ```bash
 cd frontend
 npm install
@@ -30,71 +64,116 @@ npm run dev
 | API | http://localhost:8000 |
 | API Docs | http://localhost:8000/docs |
 
----
+## Docker
 
-## ✨ What It Does
-
-1. **Add ingredients** — type them in, use quick-add chips, or upload a pantry/plate photo
-2. **Set your health profile** — chronic conditions, dietary restrictions, lifestyle
-3. **Click Find My Recipes** — AI returns 3 tailored, nutritious recipes with instructions, nutrition info, and health tips
-
----
-
-## 🏗 Stack
-
-| Layer | Tech |
-|---|---|
-| Frontend | React 18 + Vite |
-| Backend | Python FastAPI |
-| AI Model | Ollama recipe model + Ollama vision model |
-
----
-
-## 📁 Structure
-
-```
-pantrypal/
-├── backend/
-│   ├── main.py        # API routes
-│   ├── bedrock.py     # Ollama integration
-│   ├── models.py      # Pydantic schemas
-│   └── requirements.txt
-└── frontend/
-    └── src/
-        ├── App.jsx
-        ├── components/
-        │   ├── Header.jsx
-        │   ├── IngredientPanel.jsx
-        │   ├── HealthPanel.jsx
-        │   └── RecipeCard.jsx
-        └── services/api.js
+```bash
+docker compose up --build
 ```
 
----
+The compose file points the backend at the host Ollama server via `host.docker.internal`.
 
-## 🩺 Health Conditions Supported
+## API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Health check |
+| `POST` | `/api/recommend` | Generate recipes from typed/corrected ingredients |
+| `POST` | `/api/recommend/image` | Analyze an uploaded image, return detected ingredients, image-analysis metadata, and recipes |
+
+## Image Recognition Flow
+
+1. Upload a pantry, fridge, or plate photo.
+2. Ollama vision returns ingredient drafts with estimated quantity, unit, confidence, category, and notes.
+3. Review and correct the analysis in the UI.
+4. Click `Use Corrected Analysis` to regenerate recipes from the corrected ingredients.
+
+Vision models are imperfect, so the correction step is part of the intended workflow.
+
+## Food Waste Tracking
+
+Food waste analytics are stored in browser `localStorage`.
+
+- Tapping `Mark Done` in Cooking Mode records the recipe as consumed.
+- Tapping `Discard / Exit` or pressing `Escape` before completion records the recipe as waste.
+- The tracker shows consumed items, discarded recipes, waste percentages, and week/month/year charts.
+
+Waste values are estimates based on pantry items and recipe ingredient usage, not exact gram-level measurements.
+
+## Health Conditions Supported
 
 `Diabetes` `Hypertension` `Heart Disease` `Kidney Disease`
 `Gluten-Free` `Lactose Intolerance` `Nut Allergy` `Low-Sodium`
-`Vegan` `Vegetarian` `Keto` `Low-Carb` `High-Protein` + free text
+`Vegan` `Vegetarian` `Keto` `Low-Carb` `High-Protein` plus free-text notes.
 
----
+## Project Structure
 
-## 🔌 API
-
+```text
+pantrypal/
+├── backend/
+│   ├── main.py              # FastAPI routes
+│   ├── bedrock.py           # Ollama recipe + vision integration
+│   ├── models.py            # Pydantic schemas
+│   ├── requirements.txt
+│   └── tests/
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── components/
+│   │   │   ├── CookingMode.jsx
+│   │   │   ├── HealthPanel.jsx
+│   │   │   ├── ImageUploadPanel.jsx
+│   │   │   ├── IngredientPanel.jsx
+│   │   │   ├── RecipeCard.jsx
+│   │   │   ├── ShoppingList.jsx
+│   │   │   └── WasteTracker.jsx
+│   │   └── services/api.js
+│   └── package.json
+└── docker-compose.yaml
 ```
-POST /api/recommend         →  returns 3 AI-generated recipes
-POST /api/recommend/image   →  recognizes food from an uploaded image, then returns recipes
-GET  /health                →  health check
-```
 
-For image recognition, run an Ollama vision model locally, for example:
+## Troubleshooting
+
+### Ollama vision error: model runner stopped
+
+This usually means the selected vision model is too large for available RAM/VRAM. Try:
 
 ```bash
-ollama pull llava:7b
-export OLLAMA_VISION_MODEL=llava:7b
+ollama pull moondream
+export OLLAMA_VISION_MODEL=moondream
 ```
 
----
+Then restart the backend.
 
-*Built with ❤️ by Team PantryPal*
+### Image upload form errors
+
+Make sure backend dependencies are installed:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+This includes `python-multipart` for uploads and `pillow` for image compression.
+
+### API cannot reach Ollama
+
+For local backend runs, the default Ollama URL is:
+
+```bash
+http://127.0.0.1:11434
+```
+
+For Docker, `docker-compose.yaml` sets:
+
+```bash
+OLLAMA_URL=http://host.docker.internal:11434
+```
+
+## Built With
+
+- React 18 + Vite
+- FastAPI + Pydantic
+- Ollama recipe model, default `phi3:mini`
+- Ollama vision model, default `llava:7b`
+- Pillow image compression
+
+*Built by Team PantryPal.*
