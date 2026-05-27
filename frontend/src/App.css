@@ -581,8 +581,11 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
   font-style: italic; text-align: right;
 }
 
+.rcard-actions {
+  display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap;
+}
 .start-cooking-btn {
-  display: block; width: 100%; margin-top: 1.25rem;
+  flex: 1; min-width: 180px;
   padding: 0.85rem 1.5rem; border-radius: var(--radius-sm);
   background: linear-gradient(135deg, var(--orange), #f7c59f);
   border: none; color: #fff; font-size: 0.95rem; font-weight: 700;
@@ -592,6 +595,107 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
 }
 .start-cooking-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,107,53,0.4); }
 .start-cooking-btn:active { transform: translateY(0); }
+
+.chat-chef-btn {
+  flex: 1; min-width: 160px;
+  padding: 0.85rem 1.5rem; border-radius: var(--radius-sm);
+  background: var(--glass); border: 1px solid var(--glass-border);
+  color: var(--text); font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.3px;
+  transition: all 0.2s;
+}
+.chat-chef-btn:hover { border-color: var(--purple); color: var(--purple); }
+.chat-chef-btn--active { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.08); }
+
+/* ════════════════ CHEF CHAT PANEL ════════════════ */
+.chef-chat {
+  margin-top: 1.25rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  animation: fadeInUp 0.25s ease;
+}
+.chef-chat-header {
+  padding: 0.65rem 1rem;
+  display: flex; align-items: center;
+}
+.chef-chat-title {
+  font-size: 0.88rem; font-weight: 800; color: #fff; letter-spacing: 0.3px;
+}
+.chef-chat-messages {
+  padding: 0.75rem 1rem;
+  background: var(--bg-2);
+  max-height: 320px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 0.75rem;
+}
+.chat-bubble {
+  display: flex; gap: 0.6rem; align-items: flex-start; max-width: 88%;
+}
+.chat-bubble--user {
+  align-self: flex-end; flex-direction: row-reverse;
+}
+.chat-avatar {
+  font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem;
+}
+.chat-text {
+  padding: 0.55rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.88rem; line-height: 1.55; color: var(--text);
+  white-space: pre-wrap;
+}
+.chat-bubble--assistant .chat-text {
+  background: var(--bg-3); border: 1px solid var(--glass-border);
+  border-radius: 4px 12px 12px 12px;
+}
+.chat-bubble--user .chat-text {
+  background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 12px 4px 12px 12px;
+}
+.chat-typing {
+  display: flex; align-items: center; gap: 4px; padding: 0.65rem 0.85rem;
+}
+.chat-typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted);
+  animation: typingDot 1.2s infinite;
+}
+.chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+.chef-chat-suggestions {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-2); border-top: 1px solid var(--glass-border);
+}
+.chat-suggestion {
+  padding: 0.3rem 0.7rem; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  color: var(--text-muted); font-size: 0.75rem; cursor: pointer;
+  transition: all 0.15s;
+}
+.chat-suggestion:hover:not(:disabled) { border-color: var(--purple); color: var(--purple); }
+.chat-suggestion:disabled { opacity: 0.4; cursor: default; }
+.chef-chat-input-row {
+  display: flex; gap: 0.5rem; padding: 0.65rem 0.75rem;
+  background: var(--bg-3); border-top: 1px solid var(--glass-border);
+}
+.chef-chat-input {
+  flex: 1; padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-xs); border: 1px solid var(--inp-border);
+  background: var(--inp-bg); color: var(--text); font-size: 0.88rem;
+  outline: none; transition: border-color 0.15s;
+}
+.chef-chat-input:focus { border-color: var(--purple); }
+.chef-chat-input::placeholder { color: var(--text-dim); }
+.chef-chat-send {
+  padding: 0.55rem 1.1rem; border-radius: var(--radius-xs);
+  border: none; color: #fff; font-size: 0.88rem; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.chef-chat-send:hover:not(:disabled) { opacity: 0.85; }
+.chef-chat-send:disabled { opacity: 0.4; cursor: default; }
 
 /* ════════════════ SHOPPING LIST MODAL ════════════════ */
 .modal-backdrop {

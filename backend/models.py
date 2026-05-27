@@ -43,3 +43,15 @@ class Recipe(BaseModel):
 
 class RecommendResponse(BaseModel):
     recipes: List[Recipe]
+
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+class ChefChatRequest(BaseModel):
+    recipe: Recipe
+    messages: List[ChatMessage]
+
+class ChefChatResponse(BaseModel):
+    reply: str

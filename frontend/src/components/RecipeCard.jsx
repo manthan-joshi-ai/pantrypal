@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CookingMode from './CookingMode';
+import ChefChat from './ChefChat';
 
 const CARD_GRADIENTS = [
   'linear-gradient(135deg, #ff6b35, #f7c59f)',
@@ -22,6 +23,7 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   const [open, setOpen] = useState(index === 0);
   const [servings, setServings] = useState(recipe.servings || 2);
   const [cooking, setCooking] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const grad = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
   const diff = DIFF_STYLE[recipe.difficulty] || DIFF_STYLE.Easy;
   const baseSrv = recipe.servings || 2;
@@ -173,12 +175,22 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
               </div>
             </div>
 
-            {/* Start Cooking button */}
-            {recipe.instructions?.length > 0 && (
-              <button className="start-cooking-btn" onClick={() => setCooking(true)}>
-                👨‍🍳 Start Cooking Mode
+            {/* Action buttons */}
+            <div className="rcard-actions">
+              {recipe.instructions?.length > 0 && (
+                <button className="start-cooking-btn" onClick={() => setCooking(true)}>
+                  👨‍🍳 Start Cooking Mode
+                </button>
+              )}
+              <button
+                className={`chat-chef-btn ${chatOpen ? 'chat-chef-btn--active' : ''}`}
+                onClick={() => setChatOpen(c => !c)}
+              >
+                💬 {chatOpen ? 'Close Chef Chat' : 'Chat with Chef'}
               </button>
-            )}
+            </div>
+
+            {chatOpen && <ChefChat recipe={recipe} accentGrad={grad} />}
           </div>
         )}
       </div>
