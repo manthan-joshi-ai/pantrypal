@@ -16,6 +16,7 @@ class HealthProfile(BaseModel):
 class RecommendRequest(BaseModel):
     ingredients: List[Ingredient]
     health_profile: HealthProfile
+    recipe_count: int = Field(3, ge=1, le=5)
 
 class NutritionalInfo(BaseModel):
     calories: Optional[str] = ""
@@ -55,3 +56,14 @@ class ImageAnalysisItem(BaseModel):
 class ImageRecommendResponse(RecommendResponse):
     ingredients: List[Ingredient]
     image_analysis: List[ImageAnalysisItem] = Field(default_factory=list)
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+class ChefChatRequest(BaseModel):
+    recipe: Recipe
+    messages: List[ChatMessage]
+
+class ChefChatResponse(BaseModel):
+    reply: str

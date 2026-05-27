@@ -58,6 +58,7 @@ export default function App() {
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showWasteModal, setShowWasteModal] = useState(false);
+  const [recipeCount, setRecipeCount] = useState(3);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -165,7 +166,7 @@ export default function App() {
     setImageAnalysis([]);
     setResultsView('results');
     try {
-      const data = await getRecommendations(ingredients, health);
+      const data = await getRecommendations(ingredients, health, recipeCount);
       setRecipes(data.recipes || []);
       setTimeout(() => {
         document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
@@ -248,6 +249,7 @@ export default function App() {
             We'll craft the perfect recipes — tailored just for you.
           </p>
           <div className="hero-stats">
+            <div className="stat"><span>{recipeCount}</span><p>Recipes per search</p></div>
             <button type="button" className="stat stat-button" onClick={() => setShowWasteModal(true)}>
               <div>
                 <span>{heroWastePct}%</span>
@@ -282,6 +284,37 @@ export default function App() {
             <button className={`tab-btn ${activeTab === 'health' ? 'tab-active' : ''}`} onClick={() => setActiveTab('health')}>
               🩺 Health Profile {totalHealth > 0 && <span className="tab-count">{totalHealth}</span>}
             </button>
+            <div className="recipe-count-row">
+              <span className="recipe-label">📊 Recipes</span>
+              <div className="recipe-preset-btns">
+                {[1, 2, 3].map(num => (
+                  <button
+                    key={num}
+                    className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
+                    onClick={() => setRecipeCount(num)}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <div className="recipe-custom">
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  placeholder="Custom (max 5)"
+                  value={recipeCount > 3 ? recipeCount : ''}
+                  onChange={e => {
+                    const value = Number(e.target.value);
+                    if (e.target.value === '') {
+                      // Clear input
+                    } else if (!Number.isNaN(value)) {
+                      setRecipeCount(Math.min(5, Math.max(1, value)));
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="panels-grid">

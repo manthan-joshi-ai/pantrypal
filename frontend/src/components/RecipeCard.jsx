@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CookingMode from './CookingMode';
+import ChefChat from './ChefChat';
 
 const CARD_GRADIENTS = [
   'linear-gradient(135deg, #ff6b35, #f7c59f)',
@@ -22,6 +23,7 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecip
   const [open, setOpen] = useState(index === 0);
   const [servings, setServings] = useState(recipe.servings || 2);
   const [cooking, setCooking] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const grad = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
   const diff = DIFF_STYLE[recipe.difficulty] || DIFF_STYLE.Easy;
   const baseSrv = recipe.servings || 2;
@@ -189,6 +191,16 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecip
                 👨‍🍳 Start Cooking Mode
               </button>
             )}
+            <div className="rcard-actions">
+              <button
+                className={`chat-chef-btn ${chatOpen ? 'chat-chef-btn--active' : ''}`}
+                onClick={() => setChatOpen(c => !c)}
+              >
+                💬 {chatOpen ? 'Close Chef Chat' : 'Chat with Chef'}
+              </button>
+            </div>
+
+            {chatOpen && <ChefChat recipe={recipe} accentGrad={grad} />}
           </div>
         )}
       </div>

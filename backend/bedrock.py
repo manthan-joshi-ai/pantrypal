@@ -4,6 +4,7 @@ import os
 import base64
 import io
 import requests
+from dotenv import load_dotenv
 from models import (
     ImageAnalysisItem,
     Ingredient,
@@ -11,7 +12,11 @@ from models import (
     Recipe,
     RecommendRequest,
     RecommendResponse,
+    ChefChatRequest,
+    ChefChatResponse
 )
+
+load_dotenv()
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
 OLLAMA_URL = (
@@ -21,6 +26,11 @@ OLLAMA_URL = (
 )
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "phi3:mini")
 OLLAMA_VISION_MODEL = os.getenv("OLLAMA_VISION_MODEL", "llava:7b")
+
+AWS_BEARER_TOKEN_BEDROCK = os.getenv("AWS_BEARER_TOKEN_BEDROCK", "")
+AWS_BEDROCK_URL = os.getenv("AWS_BEDROCK_URL", "https://bedrock.us-east-1.amazonaws.com").rstrip("/")
+AWS_BEDROCK_MODEL = os.getenv("AWS_BEDROCK_MODEL", "minimax.minimax-m2")
+AWS_BEDROCK_ENDPOINT = f"{AWS_BEDROCK_URL}/models/{AWS_BEDROCK_MODEL}/invoke"
 
 
 def _extract_json(raw: str) -> dict:
@@ -139,7 +149,7 @@ def _build_prompt(req: RecommendRequest) -> str:
 Ingredients available: {ingredients}
 Health profile: {health_info}
 
-Return exactly 3 healthy recipes using this exact JSON structure:
+Return exactly {req.recipe_count} healthy recipes using this exact JSON structure:
 {{
 "recipes": [
     {{
@@ -229,6 +239,57 @@ def get_recommendations(req: RecommendRequest) -> RecommendResponse:
         raise ValueError("Model returned no usable recipes")
     return RecommendResponse(recipes=recipes)
 
+def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
+    r = req.recipe
+    ingredients_all = (r.ingredients_used or []) + (r.additional_ingredients or [])
+    system_prompt = (
+        f"You are a friendly expert chef and nutritionist specializing in the recipe \"{r.name}\" "
+        f"({r.cuisine} cuisine). The recipe serves {r.servings}, takes {r.prep_time} prep and {r.cook_time} to cook "
+        f"(difficulty: {r.difficulty}). "
+        f"Ingredients: {', '.join(ingredients_all)}. "
+        f"Instructions: {' | '.join(r.instructions or [])}. "
+        f"Health tags: {', '.join(r.health_tags or [])}. "
+        f"Chef tip: {r.tips or 'none'}. "
+        "Answer the user's questions about this recipe concisely and helpfully. "
+        "If asked about substitutions, scaling, techniques, or nutrition, give practical advice. "
+        "When the user asks how to make the dish spicier, recommend specific spicy ingredients or sauces, "
+        "include approximate quantities, and explain how to add them without overwhelming the recipe. "
+        "Stay focused on this recipe and cooking-related topics."
+    )
+
+    conversation = "\n".join(
+        f"{msg.role.capitalize()}: {msg.content}" for msg in req.messages
+    )
+
+    prompt = f"{system_prompt}\n\n{conversation}\nAssistant:"
+
+    try:
+        resp = requests.post(
+            OLLAMA_URL,
+            json={
+                "model": OLLAMA_MODEL,
+                "prompt": prompt,
+                "stream": False,
+                "format": "json",
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+    except requests.exceptions.ConnectionError:
+        raise ValueError("Ollama is not running. Start it with: ollama serve")
+    except requests.exceptions.Timeout:
+        raise ValueError("Chef chat timed out after 60s")
+    except requests.exceptions.HTTPError as e:
+        raise ValueError(f"Ollama chat error: {e.response.text}")
+
+    raw = resp.json().get("response", "")
+    if not raw:
+        raise ValueError("Chef chat returned an empty response from Ollama.")
+
+    if "<reasoning>" in raw and "</reasoning>" in raw:
+        raw = raw[raw.index("</reasoning>") + len("</reasoning>"):].strip()
+
+    return ChefChatResponse(reply=raw.strip())
 
 def analyze_food_image(image_bytes: bytes) -> tuple[list[Ingredient], list[ImageAnalysisItem]]:
     vision_image = _prepare_image_for_vision(image_bytes)

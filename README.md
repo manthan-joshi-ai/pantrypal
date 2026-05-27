@@ -12,6 +12,7 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
 - Health profile filters for chronic conditions, dietary needs, lifestyle preferences, and notes.
 - AI recipe recommendations with instructions, health tags, nutrition estimates, and tips.
 - Cooking Mode for every recipe, including serving adjustment and step navigation.
+- AI Chef Chat for quick insights of recipes.
 - Food waste analytics:
   - Completed recipes count as consumed.
   - Recipes exited before `Mark Done` count as discarded waste.
