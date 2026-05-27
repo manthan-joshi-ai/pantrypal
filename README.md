@@ -34,7 +34,7 @@ npm run dev
 ## ✨ What It Does
 
 1. **Add ingredients** — type them in or use quick-add chips
-2. **Set your health profile** — chronic conditions, dietary restrictions, lifestyle
+2. **Set your health profile** — chronic conditions, dietary restrictions, lifestyle, plus add any custom condition if it isn't listed
 3. **Click Find My Recipes** — AI returns 3 tailored, nutritious recipes with instructions, nutrition info, and health tips
 
 ---
@@ -77,7 +77,9 @@ pantrypal/
 
 `Diabetes` `Hypertension` `Heart Disease` `Kidney Disease`
 `Gluten-Free` `Lactose Intolerance` `Nut Allergy` `Low-Sodium`
-`Vegan` `Vegetarian` `Keto` `Low-Carb` `High-Protein` + free text
+`Vegan` `Vegetarian` `Keto` `Low-Carb` `High-Protein` + custom entries
+
+PantryPal also supports custom health condition entries in the Health Profile, so users can add any specific condition or restriction that is not already listed.
 
 ---
 

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const SECTIONS = [
   { key: 'chronic',   icon: '💊', label: 'Chronic Conditions', items: ['Diabetes','Hypertension','Heart Disease','Kidney Disease'] },
   { key: 'dietary',   icon: '🚫', label: 'Dietary Restrictions', items: ['Gluten-Free','Lactose Intolerance','Nut Allergy','Low-Sodium'] },
@@ -5,9 +7,27 @@ const SECTIONS = [
 ];
 
 export default function HealthPanel({ profile, onChange }) {
+  const [customValue, setCustomValue] = useState({ chronic: '', dietary: '', lifestyle: '' });
+
   const toggle = (key, val) => {
     const list = profile[key];
     onChange({ ...profile, [key]: list.includes(val) ? list.filter(x => x !== val) : [...list, val] });
+  };
+
+  const addCustom = (key) => {
+    const value = customValue[key].trim();
+    if (!value) return;
+    if (!profile[key].includes(value)) {
+      onChange({ ...profile, [key]: [...profile[key], value] });
+    }
+    setCustomValue(prev => ({ ...prev, [key]: '' }));
+  };
+
+  const handleKeyDown = (e, key) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCustom(key);
+    }
   };
 
   const total = profile.chronic.length + profile.dietary.length + profile.lifestyle.length;
@@ -39,6 +59,20 @@ export default function HealthPanel({ profile, onChange }) {
                 </button>
               );
             })}
+          </div>
+
+          <div className="hp-custom-row">
+            <input
+              className="dark-inp"
+              type="text"
+              placeholder={`Add custom ${label.toLowerCase().replace(' & ', ' ')}...`}
+              value={customValue[key]}
+              onChange={(e) => setCustomValue(prev => ({ ...prev, [key]: e.target.value }))}
+              onKeyDown={(e) => handleKeyDown(e, key)}
+            />
+            <button type="button" className="hp-custom-add" onClick={() => addCustom(key)}>
+              Add
+            </button>
           </div>
         </div>
       ))}
