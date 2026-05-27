@@ -35,7 +35,8 @@ npm run dev
 
 1. **Add ingredients** — type them in or use quick-add chips
 2. **Set your health profile** — chronic conditions, dietary restrictions, lifestyle, plus add any custom condition if it isn't listed
-3. **Click Find My Recipes** — AI returns 3 tailored, nutritious recipes with instructions, nutrition info, and health tips
+3. **Choose how many recipes** — pick the number of recipes you want and click Find My Recipes
+4. **Get personalised results** — AI returns your chosen number of tailored, nutritious recipes with instructions, nutrition info, and health tips
 
 ---
 
