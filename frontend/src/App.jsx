@@ -26,6 +26,7 @@ export default function App() {
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [recipeCount, setRecipeCount] = useState(3);
+  const [customRecipeInput, setCustomRecipeInput] = useState('');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -145,7 +146,10 @@ export default function App() {
                   <button
                     key={num}
                     className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
-                    onClick={() => setRecipeCount(num)}
+                    onClick={() => {
+                      setRecipeCount(num);
+                      setCustomRecipeInput('');
+                    }}
                   >
                     {num}
                   </button>
@@ -157,13 +161,17 @@ export default function App() {
                   min="1"
                   max="5"
                   placeholder="Custom (max 5)"
-                  value={recipeCount > 3 ? recipeCount : ''}
+                  value={recipeCount > 3 ? customRecipeInput : ''}
                   onChange={e => {
-                    const value = Number(e.target.value);
-                    if (e.target.value === '') {
-                      // Clear input
-                    } else if (!Number.isNaN(value)) {
-                      setRecipeCount(Math.min(5, Math.max(1, value)));
+                    const input = e.target.value;
+                    setCustomRecipeInput(input);
+                    if (input === '') {
+                      // Allow empty while typing
+                    } else {
+                      const num = Number(input);
+                      if (!isNaN(num) && num >= 1 && num <= 5) {
+                        setRecipeCount(num);
+                      }
                     }
                   }}
                 />
