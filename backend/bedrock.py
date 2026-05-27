@@ -254,6 +254,7 @@ def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
         "If asked about substitutions, scaling, techniques, or nutrition, give practical advice. "
         "When the user asks how to make the dish spicier, recommend specific spicy ingredients or sauces, "
         "include approximate quantities, and explain how to add them without overwhelming the recipe. "
+        "Respond only in plain text, without JSON or markdown formatting. "
         "Stay focused on this recipe and cooking-related topics."
     )
 
@@ -270,7 +271,6 @@ def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": False,
-                "format": "json",
             },
             timeout=60,
         )
@@ -282,14 +282,22 @@ def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
     except requests.exceptions.HTTPError as e:
         raise ValueError(f"Ollama chat error: {e.response.text}")
 
-    raw = resp.json().get("response", "")
+    raw = ""
+    try:
+        body = resp.json()
+        if isinstance(body, dict):
+            raw = body.get("response") or body.get("text") or body.get("content") or ""
+    except ValueError:
+        raw = resp.text or ""
+
+    raw = str(raw).strip()
     if not raw:
         raise ValueError("Chef chat returned an empty response from Ollama.")
 
     if "<reasoning>" in raw and "</reasoning>" in raw:
         raw = raw[raw.index("</reasoning>") + len("</reasoning>"):].strip()
 
-    return ChefChatResponse(reply=raw.strip())
+    return ChefChatResponse(reply=raw)
 
 def analyze_food_image(image_bytes: bytes) -> tuple[list[Ingredient], list[ImageAnalysisItem]]:
     vision_image = _prepare_image_for_vision(image_bytes)
