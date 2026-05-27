@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from models import RecommendRequest, RecommendResponse
-from bedrock import get_recommendations
+from models import RecommendRequest, RecommendResponse, ChefChatRequest, ChefChatResponse
+from bedrock import get_recommendations, chef_chat
 
 app = FastAPI(title="PantryPal API", version="1.0.0")
 
@@ -28,3 +28,15 @@ def recommend(req: RecommendRequest):
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Recommendation failed: {str(e)}")
+
+
+@app.post("/api/chat", response_model=ChefChatResponse)
+def chat(req: ChefChatRequest):
+    if not req.messages:
+        raise HTTPException(status_code=400, detail="No messages provided.")
+    try:
+        return chef_chat(req)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")

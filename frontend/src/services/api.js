@@ -12,3 +12,16 @@ export async function getRecommendations(ingredients, healthProfile) {
   }
   return res.json();
 }
+
+export async function chefChat(recipe, messages) {
+  const res = await fetch(`${BASE}/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipe, messages }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || 'Chat failed');
+  }
+  return res.json();
+}
