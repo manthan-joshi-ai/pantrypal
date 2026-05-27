@@ -24,13 +24,56 @@ OLLAMA_VISION_MODEL = os.getenv("OLLAMA_VISION_MODEL", "llava:7b")
 
 
 def _extract_json(raw: str) -> dict:
+    raw = raw.strip()
+    raw = re.sub(r'^```(?:json)?\s*', '', raw)
+    raw = re.sub(r'\s*```$', '', raw)
+    raw = raw.strip()
+
     try:
         return json.loads(raw)
-    except json.JSONDecodeError:
-        match = re.search(r'\{.*\}', raw, re.DOTALL)
-        if not match:
-            raise ValueError(f"Model returned invalid JSON: {raw[:300]}")
-        return json.loads(match.group())
+    except json.JSONDecodeError as first_error:
+        json_text = _extract_json_object(raw)
+        if not json_text:
+            raise ValueError(
+                f"Model returned invalid JSON and no JSON object could be extracted. "
+                f"Preview: {raw[:400]}..."
+            ) from first_error
+
+        try:
+            return json.loads(json_text)
+        except json.JSONDecodeError as second_error:
+            raise ValueError(
+                f"Model returned invalid JSON after extraction. Extracted snippet: {json_text[:400]}..."
+            ) from second_error
+
+
+def _extract_json_object(raw: str) -> str | None:
+    start = raw.find('{')
+    if start == -1:
+        return None
+
+    depth = 0
+    in_string = False
+    escape = False
+
+    for idx, char in enumerate(raw[start:], start):
+        if escape:
+            escape = False
+            continue
+        if char == '\\':
+            escape = True
+            continue
+        if char == '"':
+            in_string = not in_string
+        if in_string:
+            continue
+        if char == '{':
+            depth += 1
+        elif char == '}':
+            depth -= 1
+            if depth == 0:
+                return raw[start:idx + 1]
+    return None
 
 
 def _as_list(value) -> list:
