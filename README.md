@@ -19,6 +19,20 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
   - Numeric food waste and consumed percentages.
 - Saved recipes and shopping-list helper.
 
+## Screenshots
+
+![Dashboard](artifacts/dashboard.png)
+
+![Recipe Generation](artifacts/recipe-generation.png)
+
+![Health Preferences](artifacts/health-preference.png)
+
+![Waste Tracker](artifacts/waste-tracker.png)
+
+![Grocery List](artifacts/to-do-groceries.png)
+
+![Cooking Complete](artifacts/cooking-complete.png)
+
 ## Quick Start
 
 ### 1. Start Ollama
