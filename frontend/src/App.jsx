@@ -25,6 +25,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
+  const [recipeCount, setRecipeCount] = useState(3);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -59,7 +60,7 @@ export default function App() {
     setRecipes([]);
     setResultsView('results');
     try {
-      const data = await getRecommendations(ingredients, health);
+      const data = await getRecommendations(ingredients, health, recipeCount);
       setRecipes(data.recipes || []);
       setTimeout(() => {
         document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
@@ -91,7 +92,7 @@ export default function App() {
             We'll craft the perfect recipes — tailored just for you.
           </p>
           <div className="hero-stats">
-            <div className="stat"><span>3</span><p>Recipes per search</p></div>
+            <div className="stat"><span>{recipeCount}</span><p>Recipes per search</p></div>
             <div className="stat-divider" />
             <div className="stat"><span>AI</span><p>Powered by MiniMax</p></div>
             <div className="stat-divider" />
@@ -136,6 +137,37 @@ export default function App() {
             <div className="cta-meta">
               <div className="cta-pill">🧺 {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}</div>
               {totalHealth > 0 && <div className="cta-pill cta-pill--green">🩺 {totalHealth} health filter{totalHealth !== 1 ? 's' : ''}</div>}
+            </div>
+            <div className="recipe-count-row">
+              <span className="recipe-label">📊 Recipes</span>
+              <div className="recipe-preset-btns">
+                {[1, 2, 3].map(num => (
+                  <button
+                    key={num}
+                    className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
+                    onClick={() => setRecipeCount(num)}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <div className="recipe-custom">
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  placeholder="Custom (max 5)"
+                  value={recipeCount > 3 ? recipeCount : ''}
+                  onChange={e => {
+                    const value = Number(e.target.value);
+                    if (e.target.value === '') {
+                      // Clear input
+                    } else if (!Number.isNaN(value)) {
+                      setRecipeCount(Math.min(5, Math.max(1, value)));
+                    }
+                  }}
+                />
+              </div>
             </div>
             <button className="btn-cta" onClick={handleFind} disabled={loading || ingredients.length === 0}>
               {loading

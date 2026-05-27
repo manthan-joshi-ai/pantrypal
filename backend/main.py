@@ -22,6 +22,8 @@ def health_check():
 def recommend(req: RecommendRequest):
     if not req.ingredients:
         raise HTTPException(status_code=400, detail="Please add at least one ingredient.")
+    if req.recipe_count < 1 or req.recipe_count > 5:
+        raise HTTPException(status_code=400, detail="Recipe count must be between 1 and 5.")
     try:
         return get_recommendations(req)
     except ValueError as e:
