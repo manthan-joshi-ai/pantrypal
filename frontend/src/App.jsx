@@ -5,7 +5,7 @@ import ImageUploadPanel from './components/ImageUploadPanel';
 import HealthPanel from './components/HealthPanel';
 import RecipeCard from './components/RecipeCard';
 import ShoppingList from './components/ShoppingList';
-import WasteTracker from './components/WasteTracker';
+import FoodRecipeTracker from './components/FoodRecipeTracker';
 import { getImageRecommendations, getRecommendations } from './services/api';
 import './App.css';
 
@@ -57,7 +57,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
-  const [showWasteModal, setShowWasteModal] = useState(false);
+  const [showRecipeTrackerModal, setShowRecipeTrackerModal] = useState(false);
   const [recipeCount, setRecipeCount] = useState(3);
 
   useEffect(() => {
@@ -250,15 +250,13 @@ export default function App() {
           </p>
           <div className="hero-stats">
             <div className="stat"><span>{recipeCount}</span><p>Recipes per search</p></div>
-            <button type="button" className="stat stat-button" onClick={() => setShowWasteModal(true)}>
+            <button type="button" className="stat stat-button" onClick={() => setShowRecipeTrackerModal(true)}>
               <div>
                 <span>{heroWastePct}%</span>
-                <p>Food waste</p>
+                <p>Recipe tracker</p>
               </div>
               <div className="hero-stat">
-                <button button type="button" className="stat stat-button" onClick={() => setShowWasteModal(true)}>
                 <span>Track Now</span>
-                </button>
               </div>
               </button>
           </div>
@@ -443,21 +441,21 @@ export default function App() {
         <ShoppingList recipes={recipes} onClose={() => setShowShoppingList(false)} />
       )}
 
-      {showWasteModal && (
-        <div className="modal-backdrop" onClick={() => setShowWasteModal(false)}>
+      {showRecipeTrackerModal && (
+        <div className="modal-backdrop" onClick={() => setShowRecipeTrackerModal(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title-row">
                 <span>💚</span>
                 <div>
-                  <h2 className="modal-title">Food Waste Tracker</h2>
-                  <p className="modal-sub">Your waste analytics for PantryPal</p>
+                  <h2 className="modal-title">Food Recipe Tracker</h2>
+                  <p className="modal-sub">Completed, discarded, and consumed recipe analytics</p>
                 </div>
               </div>
-              <button className="modal-close" onClick={() => setShowWasteModal(false)}>✕</button>
+              <button className="modal-close" onClick={() => setShowRecipeTrackerModal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <WasteTracker stats={wasteStats} onReset={resetWasteStats} />
+              <FoodRecipeTracker stats={wasteStats} onReset={resetWasteStats} />
             </div>
           </div>
         </div>

@@ -1,8 +1,8 @@
 # PantryPal
 
-Turn pantry ingredients and food photos into healthy recipe ideas, nutrition guidance, cooking mode, and food-waste insights.
+Turn pantry ingredients and food photos into healthy recipe ideas, nutrition guidance, cooking mode, and food recipe insights.
 
-PantryPal is a full-stack AI web app powered by local Ollama models. Users can type ingredients, upload a pantry or plate photo, correct the image analysis, generate personalized recipes, cook step-by-step, and track consumption vs food waste over time.
+PantryPal is a full-stack AI web app powered by local Ollama models. Users can type ingredients, upload a pantry or plate photo, correct the image analysis, generate personalized recipes, cook step-by-step, and track completed, discarded, and consumed recipes over time.
 
 ## Features
 
@@ -13,11 +13,11 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
 - AI recipe recommendations with instructions, health tags, nutrition estimates, and tips.
 - Cooking Mode for every recipe, including serving adjustment and step navigation.
 - AI Chef Chat for quick insights of recipes.
-- Food waste analytics:
+- Food recipe tracker:
   - Completed recipes count as consumed.
-  - Recipes exited before `Mark Done` count as discarded waste.
-  - Weekly, monthly, and yearly consumption/waste charts.
-  - Numeric food waste and consumed percentages.
+  - Recipes exited before `Mark Done` count as discarded.
+  - Weekly, monthly, and yearly consumption/discarded charts.
+  - Numeric unused and consumed percentages.
 - Saved recipes and shopping-list helper.
 
 ## Dashboard
@@ -35,8 +35,8 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
 ## Favourites
 <img width="1710" height="1107" alt="favourites-recipies" src="https://github.com/user-attachments/assets/333d7251-bb14-40bf-9c82-5c2af70df471" />
 
-## Food Waste Tracker
-<img width="1710" height="1107" alt="waste-tracker" src="https://github.com/user-attachments/assets/0b7bc2c9-4643-45ea-bbfe-7b0521c2cb1d" />
+## Food Recipe Tracker
+<img width="1710" height="1107" alt="food-recipe-tracker" src="https://github.com/user-attachments/assets/0b7bc2c9-4643-45ea-bbfe-7b0521c2cb1d" />
 
 ## AI Chef Bot
 <img width="1710" height="1107" alt="chef-chatbot" src="https://github.com/user-attachments/assets/3de47a0d-7d07-4c98-a182-9e93516291bd" />
@@ -45,7 +45,7 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
 <img width="1710" height="1107" alt="to-do-groceries" src="https://github.com/user-attachments/assets/5247a1ba-674d-42fd-b5d6-61e4861a7888" />
 
 ## About App
-<img width="1710" height="1107" alt="waste-tracker" src="https://github.com/user-attachments/assets/aff6929a-2e20-421a-a662-88ca7e35aaa1" />
+<img width="1710" height="1107" alt="food-recipe-tracker" src="https://github.com/user-attachments/assets/aff6929a-2e20-421a-a662-88ca7e35aaa1" />
 
 ## UI Preferences
 <img width="1710" height="1107" alt="theme-switch" src="https://github.com/user-attachments/assets/46d80b8a-40d6-478c-9aed-9b5ae33655bb" />
@@ -121,15 +121,15 @@ The compose file points the backend at the host Ollama server via `host.docker.i
 
 Vision models are imperfect, so the correction step is part of the intended workflow.
 
-## Food Waste Tracking
+## Food Recipe Tracking
 
-Food waste analytics are stored in browser `localStorage`.
+Food recipe analytics are stored in browser `localStorage`.
 
 - Tapping `Mark Done` in Cooking Mode records the recipe as consumed.
-- Tapping `Discard / Exit` or pressing `Escape` before completion records the recipe as waste.
-- The tracker shows consumed items, discarded recipes, waste percentages, and week/month/year charts.
+- Tapping `Discard / Exit` or pressing `Escape` before completion records the recipe as discarded.
+- The tracker shows consumed items, discarded recipes, unused percentages, and week/month/year charts.
 
-Waste values are estimates based on pantry items and recipe ingredient usage, not exact gram-level measurements.
+Unused values are estimates based on pantry items and recipe ingredient usage, not exact gram-level measurements.
 
 ## Health Conditions Supported
 
@@ -157,7 +157,7 @@ pantrypal/
 │   │   │   ├── IngredientPanel.jsx
 │   │   │   ├── RecipeCard.jsx
 │   │   │   ├── ShoppingList.jsx
-│   │   │   └── WasteTracker.jsx
+│   │   │   └── FoodRecipeTracker.jsx
 │   │   └── services/api.js
 │   └── package.json
 └── docker-compose.yaml

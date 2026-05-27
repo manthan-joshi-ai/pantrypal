@@ -124,7 +124,7 @@ export default function CookingMode({ recipe, servings, onClose, onComplete, onA
         </div>
       )}
 
-      <p className="cm-hint">Use ← → arrow keys to navigate. Exiting before Mark Done counts this recipe as waste.</p>
+      <p className="cm-hint">Use ← → arrow keys to navigate. Exiting before Mark Done records this recipe as discarded.</p>
     </div>
   );
 }

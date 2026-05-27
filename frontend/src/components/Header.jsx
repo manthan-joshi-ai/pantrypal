@@ -15,7 +15,7 @@ export default function Header({ theme, onToggleTheme }) {
         <nav className="header-nav">
           <span className="nav-badge nav-badge--orange">🤖 Ollama AI</span>
           <span className="nav-badge nav-badge--green">🩺 Health-Aware</span>
-          <span className="nav-badge nav-badge--purple">♻️ Zero Waste</span>
+          <span className="nav-badge nav-badge--purple">📊 Recipe Tracker</span>
           <button className="theme-toggle" onClick={onToggleTheme} title="Toggle theme">
             <span className="theme-toggle-icon">{isDark ? '☀️' : '🌙'}</span>
             <span className="theme-toggle-label">{isDark ? 'Light' : 'Dark'}</span>
