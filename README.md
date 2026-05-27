@@ -19,6 +19,35 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
   - Numeric food waste and consumed percentages.
 - Saved recipes and shopping-list helper.
 
+
+## Dashboard
+<img width="1710" height="1107" alt="dashboard" src="https://github.com/user-attachments/assets/5ccb7e9d-234d-408c-9465-b473439e971f" />
+
+## Health Preference
+<img width="1710" height="1107" alt="health-preference" src="https://github.com/user-attachments/assets/92bd7bd3-a7ef-4f10-b369-21c61bb1833c" />
+
+## Reciepe Generator
+<img width="1710" height="1107" alt="recipe-generation" src="https://github.com/user-attachments/assets/f9b6b3fb-fe12-4a8d-a91b-e855c766cfff" />
+
+## Track your Recipe
+<img width="1710" height="1107" alt="cooking-complete" src="https://github.com/user-attachments/assets/60ba1ef6-f596-4cf0-b3b2-ce76188f9f88" />
+
+## Favourites
+<img width="1710" height="1107" alt="favourites-recipies" src="https://github.com/user-attachments/assets/333d7251-bb14-40bf-9c82-5c2af70df471" />
+
+## Food Waste Tracker
+<img width="1710" height="1107" alt="waste-tracker" src="https://github.com/user-attachments/assets/0b7bc2c9-4643-45ea-bbfe-7b0521c2cb1d" />
+
+## To DO List
+<img width="1710" height="1107" alt="to-do-groceries" src="https://github.com/user-attachments/assets/5247a1ba-674d-42fd-b5d6-61e4861a7888" />
+
+## About App
+<img width="1710" height="1107" alt="waste-tracker" src="https://github.com/user-attachments/assets/aff6929a-2e20-421a-a662-88ca7e35aaa1" />
+
+## UI Preferences
+<img width="1710" height="1107" alt="theme-switch" src="https://github.com/user-attachments/assets/46d80b8a-40d6-478c-9aed-9b5ae33655bb" />
+
+
 ## Quick Start
 
 ### 1. Start Ollama
