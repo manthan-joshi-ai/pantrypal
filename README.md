@@ -29,14 +29,14 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
 ## Reciepe Generator
 <img width="1710" height="1107" alt="recipe-generation" src="https://github.com/user-attachments/assets/f9b6b3fb-fe12-4a8d-a91b-e855c766cfff" />
 
-## Track your Recipe
+## Make your own dish
 <img width="1710" height="1107" alt="cooking-complete" src="https://github.com/user-attachments/assets/60ba1ef6-f596-4cf0-b3b2-ce76188f9f88" />
 
 ## Favourites
 <img width="1710" height="1107" alt="favourites-recipies" src="https://github.com/user-attachments/assets/333d7251-bb14-40bf-9c82-5c2af70df471" />
 
 ## Food Recipe Tracker
-<img width="1710" height="1107" alt="food-recipe-tracker" src="https://github.com/user-attachments/assets/0b7bc2c9-4643-45ea-bbfe-7b0521c2cb1d" />
+<img width="1710" height="1107" alt="food-recipe-tracker" src="https://github.com/user-attachments/assets/135b3d59-5a14-4d92-8c98-7e76fe14e096" />
 
 ## AI Chef Bot
 <img width="1710" height="1107" alt="chef-chatbot" src="https://github.com/user-attachments/assets/3de47a0d-7d07-4c98-a182-9e93516291bd" />
