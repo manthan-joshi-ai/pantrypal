@@ -1,14 +1,12 @@
 import os
 import json
-import requests
+import anthropic
 from dotenv import load_dotenv
 from models import RecommendRequest, RecommendResponse, Recipe, NutritionalInfo, ChefChatRequest, ChefChatResponse
 
 load_dotenv()
-BEARER_TOKEN = os.environ.get("AWS_BEARER_TOKEN_BEDROCK", "")
-REGION = "us-east-1"
-MODEL_ID = "minimax.minimax-m2"
-URL = f"https://bedrock-runtime.{REGION}.amazonaws.com/model/{MODEL_ID}/invoke"
+MODEL_ID = "claude-sonnet-4-6"
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
 
 
 def build_prompt(req: RecommendRequest) -> str:
@@ -32,13 +30,19 @@ def build_prompt(req: RecommendRequest) -> str:
 
     health_section = "\n".join(health_parts) if health_parts else "No specific health conditions mentioned."
 
+    dish_line = (
+        f"\nThe user specifically wants to make: {req.dish_name.strip()}. "
+        "Focus on this dish (or close variations of it) while respecting the available ingredients and health profile."
+        if req.dish_name and req.dish_name.strip() else ""
+    )
+
     return f"""You are PantryPal, a professional nutritionist and creative chef AI.
 The user has the following health profile:
 {health_section}
 
 Available ingredients: {', '.join(ingredients_list)}
-
-Suggest exactly 3 healthy, delicious recipes that:
+{dish_line}
+Suggest exactly {req.recipe_count} healthy, delicious recipes that:
 1. Use primarily the available ingredients
 2. Are appropriate for the user's health conditions
 3. Are nutritionally balanced
@@ -74,25 +78,18 @@ Respond ONLY with valid JSON (no markdown, no extra text) in this exact format:
 
 
 def get_recommendations(req: RecommendRequest) -> RecommendResponse:
-    if not BEARER_TOKEN:
-        raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is not set")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
 
     prompt = build_prompt(req)
 
-    payload = {
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 3000
-    }
+    response = client.messages.create(
+        model=MODEL_ID,
+        max_tokens=3000,
+        messages=[{"role": "user", "content": prompt}],
+    )
 
-    headers = {
-        "Authorization": f"Bearer {BEARER_TOKEN}",
-        "Content-Type": "application/json",
-    }
-
-    response = requests.post(URL, headers=headers, json=payload, timeout=60)
-    response.raise_for_status()
-
-    raw = response.json()["choices"][0]["message"]["content"]
+    raw = response.content[0].text
 
     # Strip <reasoning>...</reasoning> block if present
     if "<reasoning>" in raw and "</reasoning>" in raw:
@@ -133,8 +130,8 @@ def get_recommendations(req: RecommendRequest) -> RecommendResponse:
 
 
 def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
-    if not BEARER_TOKEN:
-        raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is not set")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
 
     r = req.recipe
     ingredients_all = (r.ingredients_used or []) + (r.additional_ingredients or [])
@@ -151,26 +148,14 @@ def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
         "Stay focused on this recipe and cooking-related topics."
     )
 
-    messages = [{"role": "system", "content": system_prompt}]
-    for msg in req.messages:
-        messages.append({"role": msg.role, "content": msg.content})
+    messages = [{"role": msg.role, "content": msg.content} for msg in req.messages]
 
-    payload = {
-        "messages": messages,
-        "max_tokens": 800,
-    }
+    response = client.messages.create(
+        model=MODEL_ID,
+        max_tokens=800,
+        system=system_prompt,
+        messages=messages,
+    )
 
-    headers = {
-        "Authorization": f"Bearer {BEARER_TOKEN}",
-        "Content-Type": "application/json",
-    }
-
-    response = requests.post(URL, headers=headers, json=payload, timeout=60)
-    response.raise_for_status()
-
-    raw = response.json()["choices"][0]["message"]["content"]
-
-    if "<reasoning>" in raw and "</reasoning>" in raw:
-        raw = raw[raw.index("</reasoning>") + len("</reasoning>"):].strip()
-
+    raw = response.content[0].text
     return ChefChatResponse(reply=raw.strip())

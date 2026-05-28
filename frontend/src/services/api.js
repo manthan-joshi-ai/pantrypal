@@ -1,10 +1,10 @@
 const BASE = 'http://localhost:8000/api';
 
-export async function getRecommendations(ingredients, healthProfile) {
+export async function getRecommendations(ingredients, healthProfile, recipeCount, dishName = '') {
   const res = await fetch(`${BASE}/recommend`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ingredients, health_profile: healthProfile }),
+    body: JSON.stringify({ ingredients, health_profile: healthProfile, recipe_count: recipeCount, dish_name: dishName }),
   });
   if (!res.ok) {
     const err = await res.json();

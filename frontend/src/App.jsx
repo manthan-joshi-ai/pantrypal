@@ -27,6 +27,8 @@ export default function App() {
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [recipeCount, setRecipeCount] = useState(3);
   const [customRecipeInput, setCustomRecipeInput] = useState('');
+  const [recipeCountError, setRecipeCountError] = useState('');
+  const [dishName, setDishName] = useState('');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -61,7 +63,7 @@ export default function App() {
     setRecipes([]);
     setResultsView('results');
     try {
-      const data = await getRecommendations(ingredients, health, recipeCount);
+      const data = await getRecommendations(ingredients, health, recipeCount, dishName);
       setRecipes(data.recipes || []);
       setTimeout(() => {
         document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
@@ -95,7 +97,7 @@ export default function App() {
           <div className="hero-stats">
             <div className="stat"><span>{recipeCount}</span><p>Recipes per search</p></div>
             <div className="stat-divider" />
-            <div className="stat"><span>AI</span><p>Powered by MiniMax</p></div>
+            <div className="stat"><span>AI</span><p>Powered by Claude</p></div>
             <div className="stat-divider" />
             <div className="stat"><span>0%</span><p>Food waste</p></div>
           </div>
@@ -134,6 +136,17 @@ export default function App() {
 
           {error && <div className="error-toast">⚠ {error}</div>}
 
+          <div className="dish-request-row">
+            <span className="dish-request-label">🍽 Have a dish in mind? <span>(optional)</span></span>
+            <input
+              className="dark-inp dish-request-input"
+              type="text"
+              placeholder="e.g. Pasta, Biryani, Stir fry…"
+              value={dishName}
+              onChange={e => setDishName(e.target.value)}
+            />
+          </div>
+
           <div className="cta-area">
             <div className="cta-meta">
               <div className="cta-pill">🧺 {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}</div>
@@ -166,15 +179,23 @@ export default function App() {
                     const input = e.target.value;
                     setCustomRecipeInput(input);
                     if (input === '') {
-                      // Allow empty while typing
+                      setRecipeCountError('');
                     } else {
                       const num = Number(input);
-                      if (!isNaN(num) && num >= 1 && num <= 5) {
+                      if (!isNaN(num) && num > 5) {
+                        setRecipeCountError('Only 5 recipes allowed as of now.');
+                      } else if (!isNaN(num) && num >= 1) {
+                        setRecipeCountError('');
                         setRecipeCount(num);
                       }
                     }
                   }}
                 />
+                {recipeCountError && (
+                  <div style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.35rem' }}>
+                    ⚠ {recipeCountError}
+                  </div>
+                )}
               </div>
             </div>
             <button className="btn-cta" onClick={handleFind} disabled={loading || ingredients.length === 0}>
@@ -278,7 +299,7 @@ export default function App() {
       <footer className="footer">
         <span>🥘 PantryPal</span>
         <span>·</span>
-        <span>Powered by MiniMax AI on AWS Bedrock</span>
+        <span>Powered by Claude (Anthropic)</span>
         <span>·</span>
         <span>2026</span>
       </footer>

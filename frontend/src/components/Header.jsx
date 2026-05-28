@@ -10,7 +10,7 @@ export default function Header({ theme, onToggleTheme }) {
           <span className="brand-tag">AI Chef</span>
         </div>
         <nav className="header-nav">
-          <span className="nav-badge nav-badge--orange">🤖 MiniMax AI</span>
+          <span className="nav-badge nav-badge--orange">🤖 Claude AI</span>
           <span className="nav-badge nav-badge--green">🩺 Health-Aware</span>
           <span className="nav-badge nav-badge--purple">♻️ Zero Waste</span>
           <button className="theme-toggle" onClick={onToggleTheme} title="Toggle theme">
