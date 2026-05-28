@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CookingMode from './CookingMode';
+import ChefChat from './ChefChat';
 
 const CARD_GRADIENTS = [
   'linear-gradient(135deg, #ff6b35, #f7c59f)',
@@ -18,16 +19,22 @@ const scaleNutr = (val, factor) => {
   return val.replace(/(\d+\.?\d*)/g, (_, n) => Math.round(parseFloat(n) * factor));
 };
 
-export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
+export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecipeDone, onRecipeAbandoned }) {
   const [open, setOpen] = useState(index === 0);
   const [servings, setServings] = useState(recipe.servings || 2);
   const [cooking, setCooking] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const grad = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
   const diff = DIFF_STYLE[recipe.difficulty] || DIFF_STYLE.Easy;
   const baseSrv = recipe.servings || 2;
   const factor = servings / baseSrv;
 
   const nutr = recipe.nutritional_info;
+  const canCook = recipe.instructions?.length > 0;
+  const startCooking = (event) => {
+    event?.stopPropagation();
+    setCooking(true);
+  };
 
   return (
     <>
@@ -74,6 +81,11 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
           <div className="rcard-strip-item diff-item" style={{ color: diff.color, background: diff.bg }}>
             {diff.label}
           </div>
+          {canCook && (
+            <button className="strip-cooking-btn" onClick={startCooking}>
+              Start Cooking
+            </button>
+          )}
         </div>
 
         {/* Health tags */}
@@ -173,18 +185,34 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
               </div>
             </div>
 
-            {/* Start Cooking button */}
-            {recipe.instructions?.length > 0 && (
-              <button className="start-cooking-btn" onClick={() => setCooking(true)}>
-                👨‍🍳 Start Cooking Mode
+            {/* Action buttons */}
+            <div className="rcard-actions">
+              {canCook && (
+                <button className="start-cooking-btn" onClick={startCooking}>
+                  👨‍🍳 Start Cooking Mode
+                </button>
+              )}
+              <button
+                className={`chat-chef-btn ${chatOpen ? 'chat-chef-btn--active' : ''}`}
+                onClick={() => setChatOpen(c => !c)}
+              >
+                💬 {chatOpen ? 'Close Chef Chat' : 'Chat with Chef'}
               </button>
-            )}
+            </div>
+
+            {chatOpen && <ChefChat recipe={recipe} accentGrad={grad} />}
           </div>
         )}
       </div>
 
       {cooking && (
-        <CookingMode recipe={recipe} servings={servings} onClose={() => setCooking(false)} />
+        <CookingMode
+          recipe={recipe}
+          servings={servings}
+          onClose={() => setCooking(false)}
+          onComplete={onRecipeDone}
+          onAbandon={onRecipeAbandoned}
+        />
       )}
     </>
   );

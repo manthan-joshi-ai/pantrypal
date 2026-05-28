@@ -1,30 +1,67 @@
 import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import IngredientPanel from './components/IngredientPanel';
+import ImageUploadPanel from './components/ImageUploadPanel';
 import HealthPanel from './components/HealthPanel';
 import RecipeCard from './components/RecipeCard';
 import ShoppingList from './components/ShoppingList';
-import { getRecommendations } from './services/api';
+import FoodRecipeTracker from './components/FoodRecipeTracker';
+import { getImageRecommendations, getRecommendations } from './services/api';
 import './App.css';
 
 const DEFAULT_HEALTH = { chronic: [], dietary: [], lifestyle: [], notes: '' };
+const DEFAULT_WASTE = {
+  completedRecipes: 0,
+  ingredientsSaved: 0,
+  servingsCooked: 0,
+  discardedRecipes: 0,
+  lastRecipe: '',
+  lastWasteRecipe: '',
+  possibleWasteItems: 0,
+  leftoverItems: 0,
+  history: [],
+};
 
 const loadSaved = () => {
   try { return JSON.parse(localStorage.getItem('pp-saved') || '[]'); }
   catch { return []; }
 };
 
+const loadWaste = () => {
+  try { return { ...DEFAULT_WASTE, ...JSON.parse(localStorage.getItem('pp-waste') || '{}') }; }
+  catch { return DEFAULT_WASTE; }
+};
+
+const analysisToIngredients = (items) => (
+  items
+    .map((item, index) => ({
+      id: `review-${Date.now()}-${index}`,
+      name: (item.name || '').trim(),
+      quantity: (item.estimated_quantity || item.quantity || '').trim(),
+      unit: (item.unit || '').trim(),
+    }))
+    .filter(item => item.name)
+);
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('pp-theme') || 'dark');
   const [ingredients, setIngredients] = useState([]);
   const [health, setHealth] = useState(DEFAULT_HEALTH);
   const [recipes, setRecipes] = useState([]);
+  const [imageAnalysis, setImageAnalysis] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState(loadSaved);
+  const [wasteStats, setWasteStats] = useState(loadWaste);
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
+  const [showRecipeTrackerModal, setShowRecipeTrackerModal] = useState(false);
+  const [recipeCount, setRecipeCount] = useState(3);
+  const [customRecipeInput, setCustomRecipeInput] = useState('');
+  const [recipeCountError, setRecipeCountError] = useState('');
+  const [dishName, setDishName] = useState('');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -49,6 +86,78 @@ export default function App() {
 
   const isSaved = (recipe) => savedRecipes.some(r => r.name === recipe.name);
 
+  const getRecipeWasteScope = (recipe) => {
+    const pantryItems = recipe.ingredients_used?.length || 0;
+    const possibleWasteItems = Math.max(
+      ingredients.length,
+      pantryItems + (recipe.additional_ingredients?.length || 0),
+      pantryItems,
+    );
+    return { pantryItems, possibleWasteItems };
+  };
+
+  const updateWasteStats = (recipe, servings) => {
+    const { pantryItems, possibleWasteItems } = getRecipeWasteScope(recipe);
+    const leftoverItems = Math.max(0, possibleWasteItems - pantryItems);
+    const event = {
+      id: `${Date.now()}-${recipe.name}`,
+      date: new Date().toISOString(),
+      status: 'completed',
+      recipeName: recipe.name,
+      ingredientsUsed: pantryItems,
+      possibleWasteItems,
+      leftoverItems,
+      servings,
+    };
+
+    setWasteStats(prev => {
+      const updated = {
+        ...prev,
+        completedRecipes: prev.completedRecipes + 1,
+        ingredientsSaved: prev.ingredientsSaved + pantryItems,
+        servingsCooked: prev.servingsCooked + servings,
+        lastRecipe: recipe.name,
+        possibleWasteItems: (prev.possibleWasteItems || 0) + possibleWasteItems,
+        leftoverItems: (prev.leftoverItems || 0) + leftoverItems,
+        history: [...(prev.history || []), event],
+      };
+      localStorage.setItem('pp-waste', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const recordRecipeWaste = (recipe) => {
+    const { possibleWasteItems } = getRecipeWasteScope(recipe);
+    const event = {
+      id: `${Date.now()}-${recipe.name}-discarded`,
+      date: new Date().toISOString(),
+      status: 'discarded',
+      recipeName: recipe.name,
+      ingredientsUsed: 0,
+      possibleWasteItems,
+      leftoverItems: possibleWasteItems,
+      servings: 0,
+    };
+
+    setWasteStats(prev => {
+      const updated = {
+        ...prev,
+        discardedRecipes: (prev.discardedRecipes || 0) + 1,
+        lastWasteRecipe: recipe.name,
+        possibleWasteItems: (prev.possibleWasteItems || 0) + possibleWasteItems,
+        leftoverItems: (prev.leftoverItems || 0) + possibleWasteItems,
+        history: [...(prev.history || []), event],
+      };
+      localStorage.setItem('pp-waste', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const resetWasteStats = () => {
+    localStorage.removeItem('pp-waste');
+    setWasteStats(DEFAULT_WASTE);
+  };
+
   const handleFind = async () => {
     if (ingredients.length === 0) {
       setError('Add at least one ingredient to your pantry.');
@@ -57,9 +166,10 @@ export default function App() {
     setLoading(true);
     setError('');
     setRecipes([]);
+    setImageAnalysis([]);
     setResultsView('results');
     try {
-      const data = await getRecommendations(ingredients, health);
+      const data = await getRecommendations(ingredients, health, recipeCount, dishName);
       setRecipes(data.recipes || []);
       setTimeout(() => {
         document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
@@ -71,8 +181,59 @@ export default function App() {
     }
   };
 
+  const handleUseCorrectedAnalysis = async () => {
+    const correctedIngredients = analysisToIngredients(imageAnalysis);
+    if (correctedIngredients.length === 0) {
+      setError('Keep at least one corrected ingredient before updating recipes.');
+      return;
+    }
+    setIngredients(correctedIngredients);
+    setLoading(true);
+    setError('');
+    setRecipes([]);
+    setResultsView('results');
+    try {
+      const data = await getRecommendations(correctedIngredients, health);
+      setRecipes(data.recipes || []);
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (e) {
+      setError(e.message || 'Could not update recipes from the corrected analysis.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageAnalyze = async (file) => {
+    setImageLoading(true);
+    setLoading(true);
+    setError('');
+    setRecipes([]);
+    setImageAnalysis([]);
+    setResultsView('results');
+    try {
+      const data = await getImageRecommendations(file, health);
+      const found = data.ingredients || [];
+      setImageAnalysis(data.image_analysis || found);
+      setIngredients(found);
+      setRecipes(data.recipes || []);
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (e) {
+      setError(e.message || 'Could not analyze the image. Please try another photo.');
+    } finally {
+      setImageLoading(false);
+      setLoading(false);
+    }
+  };
+
   const totalHealth = health.chronic.length + health.dietary.length + health.lifestyle.length;
   const displayedRecipes = resultsView === 'saved' ? savedRecipes : recipes;
+  const heroWastePct = wasteStats.possibleWasteItems
+    ? Math.round(((wasteStats.leftoverItems || 0) / wasteStats.possibleWasteItems) * 100)
+    : 0;
 
   return (
     <div className="app">
@@ -91,11 +252,19 @@ export default function App() {
             We'll craft the perfect recipes — tailored just for you.
           </p>
           <div className="hero-stats">
-            <div className="stat"><span>3</span><p>Recipes per search</p></div>
+            <div className="stat"><span>{recipeCount}</span><p>Recipes per search</p></div>
             <div className="stat-divider" />
-            <div className="stat"><span>AI</span><p>Powered by MiniMax</p></div>
+            <div className="stat"><span>AI</span><p>Powered by Claude</p></div>
             <div className="stat-divider" />
-            <div className="stat"><span>0%</span><p>Food waste</p></div>
+            <button type="button" className="stat stat-button" onClick={() => setShowRecipeTrackerModal(true)}>
+              <div>
+                <span>{heroWastePct}%</span>
+                <p>Recipe tracker</p>
+              </div>
+              <div className="hero-stat">
+                <span>Track Now</span>
+              </div>
+            </button>
           </div>
         </div>
         <div className="hero-visual">
@@ -119,11 +288,52 @@ export default function App() {
             <button className={`tab-btn ${activeTab === 'health' ? 'tab-active' : ''}`} onClick={() => setActiveTab('health')}>
               🩺 Health Profile {totalHealth > 0 && <span className="tab-count">{totalHealth}</span>}
             </button>
+            <div className="recipe-count-row">
+              <span className="recipe-label">📊 Recipes</span>
+              <div className="recipe-preset-btns">
+                {[1, 2, 3].map(num => (
+                  <button
+                    key={num}
+                    className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
+                    onClick={() => setRecipeCount(num)}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <div className="recipe-custom">
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  placeholder="Custom (max 5)"
+                  value={recipeCount > 3 ? recipeCount : ''}
+                  onChange={e => {
+                    const value = Number(e.target.value);
+                    if (e.target.value === '') {
+                      // Clear input
+                    } else if (!Number.isNaN(value)) {
+                      setRecipeCount(Math.min(5, Math.max(1, value)));
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="panels-grid">
             <div className={`panel-wrapper ${activeTab === 'ingredients' ? 'panel-visible' : 'panel-hidden'}`}>
-              <IngredientPanel ingredients={ingredients} onChange={setIngredients} />
+              <div className="top-panels-grid">
+                <IngredientPanel ingredients={ingredients} onChange={setIngredients} />
+                <ImageUploadPanel
+                  analyzing={imageLoading}
+                  imageAnalysis={imageAnalysis}
+                  recipeLoading={loading && !imageLoading}
+                  onAnalyze={handleImageAnalyze}
+                  onAnalysisChange={setImageAnalysis}
+                  onUseCorrected={handleUseCorrectedAnalysis}
+                />
+              </div>
             </div>
             <div className={`panel-wrapper ${activeTab === 'health' ? 'panel-visible' : 'panel-hidden'}`}>
               <HealthPanel profile={health} onChange={setHealth} />
@@ -132,10 +342,67 @@ export default function App() {
 
           {error && <div className="error-toast">⚠ {error}</div>}
 
+          <div className="dish-request-row">
+            <span className="dish-request-label">🍽 Have a dish in mind? <span>(optional)</span></span>
+            <input
+              className="dark-inp dish-request-input"
+              type="text"
+              placeholder="e.g. Pasta, Biryani, Stir fry…"
+              value={dishName}
+              onChange={e => setDishName(e.target.value)}
+            />
+          </div>
+
           <div className="cta-area">
             <div className="cta-meta">
               <div className="cta-pill">🧺 {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}</div>
               {totalHealth > 0 && <div className="cta-pill cta-pill--green">🩺 {totalHealth} health filter{totalHealth !== 1 ? 's' : ''}</div>}
+            </div>
+            <div className="recipe-count-row">
+              <span className="recipe-label">📊 Recipes</span>
+              <div className="recipe-preset-btns">
+                {[1, 2, 3].map(num => (
+                  <button
+                    key={num}
+                    className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
+                    onClick={() => {
+                      setRecipeCount(num);
+                      setCustomRecipeInput('');
+                    }}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <div className="recipe-custom">
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  placeholder="Custom (max 5)"
+                  value={recipeCount > 3 ? customRecipeInput : ''}
+                  onChange={e => {
+                    const input = e.target.value;
+                    setCustomRecipeInput(input);
+                    if (input === '') {
+                      setRecipeCountError('');
+                    } else {
+                      const num = Number(input);
+                      if (!isNaN(num) && num > 5) {
+                        setRecipeCountError('Only 5 recipes allowed as of now.');
+                      } else if (!isNaN(num) && num >= 1) {
+                        setRecipeCountError('');
+                        setRecipeCount(num);
+                      }
+                    }
+                  }}
+                />
+                {recipeCountError && (
+                  <div style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.35rem' }}>
+                    ⚠ {recipeCountError}
+                  </div>
+                )}
+              </div>
             </div>
             <button className="btn-cta" onClick={handleFind} disabled={loading || ingredients.length === 0}>
               {loading
@@ -208,6 +475,8 @@ export default function App() {
                   index={i}
                   saved={isSaved(r)}
                   onToggleSave={toggleSave}
+                  onRecipeDone={updateWasteStats}
+                  onRecipeAbandoned={recordRecipeWaste}
                 />
               ))}
             </div>
@@ -235,10 +504,30 @@ export default function App() {
         <ShoppingList recipes={recipes} onClose={() => setShowShoppingList(false)} />
       )}
 
+      {showRecipeTrackerModal && (
+        <div className="modal-backdrop" onClick={() => setShowRecipeTrackerModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title-row">
+                <span>💚</span>
+                <div>
+                  <h2 className="modal-title">Food Recipe Tracker</h2>
+                  <p className="modal-sub">Completed, discarded, and consumed recipe analytics</p>
+                </div>
+              </div>
+              <button className="modal-close" onClick={() => setShowRecipeTrackerModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <FoodRecipeTracker stats={wasteStats} onReset={resetWasteStats} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="footer">
         <span>🥘 PantryPal</span>
         <span>·</span>
-        <span>Powered by MiniMax AI on AWS Bedrock</span>
+        <span>Powered by Claude (Anthropic)</span>
         <span>·</span>
         <span>2026</span>
       </footer>

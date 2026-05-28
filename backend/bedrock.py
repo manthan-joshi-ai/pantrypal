@@ -1,12 +1,37 @@
 import os
+import io
 import json
-import requests
-from models import RecommendRequest, RecommendResponse, Recipe, NutritionalInfo
+import base64
+import anthropic
+from dotenv import load_dotenv
+from .models import (
+    ImageAnalysisItem,
+    Ingredient,
+    RecommendRequest,
+    RecommendResponse,
+    Recipe,
+    NutritionalInfo,
+    ChefChatRequest,
+    ChefChatResponse,
+)
 
-BEARER_TOKEN = os.environ.get("AWS_BEARER_TOKEN_BEDROCK", "")
-REGION = "us-east-1"
-MODEL_ID = "minimax.minimax-m2"
-URL = f"https://bedrock-runtime.{REGION}.amazonaws.com/model/{MODEL_ID}/invoke"
+load_dotenv()
+MODEL_ID = "claude-sonnet-4-6"
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+
+
+def _prepare_image(image_bytes: bytes) -> bytes:
+    try:
+        from PIL import Image
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            img.thumbnail((1024, 1024))
+            if img.mode not in ("RGB", "L"):
+                img = img.convert("RGB")
+            out = io.BytesIO()
+            img.save(out, format="JPEG", quality=82, optimize=True)
+            return out.getvalue()
+    except Exception:
+        return image_bytes
 
 
 def build_prompt(req: RecommendRequest) -> str:
@@ -30,13 +55,19 @@ def build_prompt(req: RecommendRequest) -> str:
 
     health_section = "\n".join(health_parts) if health_parts else "No specific health conditions mentioned."
 
+    dish_line = (
+        f"\nThe user specifically wants to make: {req.dish_name.strip()}. "
+        "Focus on this dish (or close variations of it) while respecting the available ingredients and health profile."
+        if req.dish_name and req.dish_name.strip() else ""
+    )
+
     return f"""You are PantryPal, a professional nutritionist and creative chef AI.
 The user has the following health profile:
 {health_section}
 
 Available ingredients: {', '.join(ingredients_list)}
-
-Suggest exactly 3 healthy, delicious recipes that:
+{dish_line}
+Suggest exactly {req.recipe_count} healthy, delicious recipes that:
 1. Use primarily the available ingredients
 2. Are appropriate for the user's health conditions
 3. Are nutritionally balanced
@@ -72,31 +103,22 @@ Respond ONLY with valid JSON (no markdown, no extra text) in this exact format:
 
 
 def get_recommendations(req: RecommendRequest) -> RecommendResponse:
-    if not BEARER_TOKEN:
-        raise ValueError("AWS_BEARER_TOKEN_BEDROCK environment variable is not set")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
 
     prompt = build_prompt(req)
 
-    payload = {
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 3000
-    }
+    response = client.messages.create(
+        model=MODEL_ID,
+        max_tokens=3000,
+        messages=[{"role": "user", "content": prompt}],
+    )
 
-    headers = {
-        "Authorization": f"Bearer {BEARER_TOKEN}",
-        "Content-Type": "application/json",
-    }
+    raw = response.content[0].text
 
-    response = requests.post(URL, headers=headers, json=payload, timeout=60)
-    response.raise_for_status()
-
-    raw = response.json()["choices"][0]["message"]["content"]
-
-    # Strip <reasoning>...</reasoning> block if present
     if "<reasoning>" in raw and "</reasoning>" in raw:
         raw = raw[raw.index("</reasoning>") + len("</reasoning>"):].strip()
 
-    # Strip markdown code fences if present
     if raw.startswith("```"):
         raw = raw.split("```")[1]
         if raw.startswith("json"):
@@ -128,3 +150,118 @@ def get_recommendations(req: RecommendRequest) -> RecommendResponse:
         ))
 
     return RecommendResponse(recipes=recipes)
+
+
+def chef_chat(req: ChefChatRequest) -> ChefChatResponse:
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
+
+    r = req.recipe
+    ingredients_all = (r.ingredients_used or []) + (r.additional_ingredients or [])
+    system_prompt = (
+        f"You are a friendly expert chef and nutritionist specializing in the recipe \"{r.name}\" "
+        f"({r.cuisine} cuisine). The recipe serves {r.servings}, takes {r.prep_time} prep and {r.cook_time} to cook "
+        f"(difficulty: {r.difficulty}). "
+        f"Ingredients: {', '.join(ingredients_all)}. "
+        f"Instructions: {' | '.join(r.instructions or [])}. "
+        f"Health tags: {', '.join(r.health_tags or [])}. "
+        f"Chef tip: {r.tips or 'none'}. "
+        "Answer the user's questions about this recipe concisely and helpfully. "
+        "If asked about substitutions, scaling, techniques, or nutrition, give practical advice. "
+        "Stay focused on this recipe and cooking-related topics."
+    )
+
+    messages = [{"role": msg.role, "content": msg.content} for msg in req.messages]
+
+    response = client.messages.create(
+        model=MODEL_ID,
+        max_tokens=800,
+        system=system_prompt,
+        messages=messages,
+    )
+
+    raw = response.content[0].text
+    return ChefChatResponse(reply=raw.strip())
+
+
+def analyze_food_image(image_bytes: bytes) -> tuple[list[Ingredient], list[ImageAnalysisItem]]:
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
+
+    vision_image = _prepare_image(image_bytes)
+    b64 = base64.standard_b64encode(vision_image).decode("utf-8")
+
+    response = client.messages.create(
+        model=MODEL_ID,
+        max_tokens=1000,
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": "image/jpeg", "data": b64},
+                },
+                {
+                    "type": "text",
+                    "text": (
+                        "You are analyzing a food, pantry, fridge, or plate image for a recipe app. "
+                        "Identify visible edible ingredients and pantry items. "
+                        "Prefer raw ingredient names over dish names. "
+                        "Estimate quantity only when visually clear; otherwise leave blank.\n\n"
+                        "Respond ONLY with valid JSON, no markdown or extra text:\n"
+                        '{"ingredients": [{"name": "tomato", "estimated_quantity": "2", "unit": "pcs", '
+                        '"confidence": "high", "category": "vegetable", "notes": "ripe red tomatoes"}]}\n\n'
+                        "Use confidence values: high, medium, or low. "
+                        "Only include items you can reasonably see. Use common ingredient names, not brand names."
+                    ),
+                },
+            ],
+        }],
+    )
+
+    raw = response.content[0].text
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        raise ValueError("Could not parse image analysis response")
+
+    raw_items = data.get("ingredients", []) if isinstance(data, dict) else []
+
+    seen: set[str] = set()
+    ingredients: list[Ingredient] = []
+    image_analysis: list[ImageAnalysisItem] = []
+
+    for item in raw_items:
+        if isinstance(item, str):
+            name, qty, unit, conf, cat, notes = item, "", "", "", "", ""
+        elif isinstance(item, dict):
+            name = (item.get("name") or item.get("ingredient") or item.get("food") or "").strip()
+            qty = (item.get("estimated_quantity") or item.get("quantity") or "").strip()
+            unit = (item.get("unit") or "").strip()
+            conf = (item.get("confidence") or "").strip().lower()
+            cat = (item.get("category") or "").strip()
+            notes = (item.get("notes") or item.get("description") or "").strip()
+        else:
+            continue
+
+        key = name.lower()
+        if not name or key in seen:
+            continue
+        seen.add(key)
+
+        ingredients.append(Ingredient(id=f"img-{len(ingredients)+1}", name=name, quantity=qty, unit=unit))
+        image_analysis.append(ImageAnalysisItem(
+            name=name, estimated_quantity=qty, unit=unit,
+            confidence=conf, category=cat, notes=notes,
+        ))
+
+    if not ingredients:
+        raise ValueError("No recognizable food items found in the image")
+
+    return ingredients, image_analysis
