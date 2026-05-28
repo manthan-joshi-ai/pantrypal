@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PantryPal — Hackathon Pitch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #ff6b35;
+    --green:  #00c48c;
+    --purple: #a855f7;
+    --blue:   #3b82f6;
+    --dark:   #0d1117;
+    --dark2:  #161b22;
+    --dark3:  #21262d;
+    --text:   #e6edf3;
+    --muted:  rgba(230,237,243,0.6);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  @keyframes shimmer  { from{background-position:-200% 0} to{background-position:200% 0} }
+  @keyframes spin     { to{transform:rotate(360deg)} }
+  @keyframes countUp  { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+  @keyframes glow     { 0%,100%{box-shadow:0 0 20px rgba(255,107,53,0.3)} 50%{box-shadow:0 0 40px rgba(255,107,53,0.6)} }
+
+  .fade-up { animation: fadeUp 0.8s ease forwards; }
+
+  /* ── LAYOUT ── */
+  section {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 4rem 2rem;
+    position: relative; overflow: hidden;
+  }
+  .container { max-width: 960px; margin: 0 auto; width: 100%; }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 0.6rem; z-index: 999;
+  }
+  .nav-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); cursor: pointer;
+    transition: all 0.3s; text-decoration: none;
+  }
+  .nav-dot:hover { background: var(--orange); transform: scale(1.4); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--orange); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-label::before {
+    content: ''; width: 24px; height: 2px; background: var(--orange);
+  }
+
+  /* ══════════════════════════════════
+     SECTION 1 — HERO
+  ══════════════════════════════════ */
+  #hero {
+    background: radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255,107,53,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,196,140,0.08) 0%, transparent 60%),
+                var(--dark);
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3);
+    padding: 0.4rem 1rem; border-radius: 999px;
+    font-size: 0.78rem; font-weight: 700; color: var(--orange);
+    margin-bottom: 1.5rem; animation: glow 2s ease-in-out infinite;
+  }
+  .hero-title {
+    font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--orange), #f7c59f, var(--green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: 1.15rem; color: var(--muted); max-width: 560px;
+    margin: 0 auto 2.5rem;
+  }
+  .hero-pills {
+    display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+  }
+  .pill {
+    padding: 0.45rem 1rem; border-radius: 999px;
+    font-size: 0.82rem; font-weight: 600;
+    border: 1px solid;
+  }
+  .pill-orange { border-color: rgba(255,107,53,0.4); color: var(--orange); background: rgba(255,107,53,0.08); }
+  .pill-green  { border-color: rgba(0,196,140,0.4);  color: var(--green);  background: rgba(0,196,140,0.08); }
+  .pill-purple { border-color: rgba(168,85,247,0.4); color: var(--purple); background: rgba(168,85,247,0.08); }
+
+  .hero-visual {
+    margin-top: 3rem;
+    display: flex; justify-content: center; align-items: center; gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-emoji {
+    font-size: 3.5rem; animation: float 3s ease-in-out infinite;
+  }
+  .hero-emoji:nth-child(2) { animation-delay: 0.4s; font-size: 3rem; }
+  .hero-emoji:nth-child(3) { animation-delay: 0.8s; font-size: 4rem; }
+  .hero-emoji:nth-child(4) { animation-delay: 1.2s; font-size: 3rem; }
+  .hero-emoji:nth-child(5) { animation-delay: 1.6s; font-size: 3.5rem; }
+
+  /* ══════════════════════════════════
+     SECTION 2 — PROBLEM
+  ══════════════════════════════════ */
+  #problem {
+    background: radial-gradient(ellipse 60% 50% at 0% 50%, rgba(239,68,68,0.07) 0%, transparent 60%),
+                var(--dark2);
+  }
+  .problem-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.25rem; margin-top: 2rem;
+  }
+  .problem-card {
+    background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 16px; padding: 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  .problem-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: #ef4444;
+  }
+  .stat-num {
+    font-size: 2.8rem; font-weight: 900; color: #ef4444;
+    line-height: 1; margin-bottom: 0.35rem;
+    animation: countUp 0.8s ease;
+  }
+  .stat-label { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+  .stat-source {
+    margin-top: 0.6rem; font-size: 0.7rem; color: rgba(230,237,243,0.35);
+    font-style: italic; border-top: 1px solid rgba(239,68,68,0.15);
+    padding-top: 0.5rem;
+  }
+  .problem-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+  .problem-headline {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800;
+    line-height: 1.3; margin-bottom: 0.75rem;
+  }
+  .problem-headline span { color: #ef4444; }
+  .problem-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ══════════════════════════════════
+     SECTION 3 — SOLUTION
+  ══════════════════════════════════ */
+  #solution {
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0,196,140,0.07) 0%, transparent 65%),
+                var(--dark);
+    text-align: center;
+  }
+  .solution-headline {
+    font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900;
+    line-height: 1.15; margin-bottom: 0.75rem;
+  }
+  .solution-tagline {
+    font-size: 1.05rem; color: var(--muted); max-width: 500px;
+    margin: 0 auto 3rem; line-height: 1.7;
+  }
+  .how-it-works {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; flex-wrap: wrap; margin-bottom: 3rem;
+  }
+  .hiw-step {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 2rem 1.5rem; width: 220px;
+    transition: all 0.2s;
+  }
+  .hiw-step:hover { border-color: var(--green); transform: translateY(-4px); }
+  .hiw-emoji { font-size: 3rem; display: block; margin-bottom: 1rem; }
+  .hiw-title { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 0.4rem; }
+  .hiw-desc  { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+  .hiw-arrow {
+    font-size: 1.75rem; color: var(--green); padding: 0 0.5rem;
+    flex-shrink: 0; opacity: 0.6;
+  }
+  .solution-result {
+    display: inline-flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
+    background: linear-gradient(135deg, rgba(0,196,140,0.1), rgba(255,107,53,0.08));
+    border: 1px solid rgba(0,196,140,0.25); border-radius: 16px;
+    padding: 1.25rem 2.5rem; margin-bottom: 2rem;
+  }
+  .result-stat { text-align: center; }
+  .result-num {
+    font-size: 2rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--green), #00e5a0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; display: block; line-height: 1;
+  }
+  .result-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+  .result-divider { width: 1px; background: rgba(255,255,255,0.1); }
+  .solution-stack {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+  }
+  .tech-pill {
+    padding: 0.3rem 0.75rem; border-radius: 999px;
+    font-size: 0.72rem; font-weight: 600;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+    color: var(--muted);
+  }
+
+  /* ══════════════════════════════════
+     SECTION 4 — BENEFITS
+  ══════════════════════════════════ */
+  #benefits {
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,196,140,0.08) 0%, transparent 60%),
+                var(--dark2);
+  }
+  .benefits-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem; margin-top: 2rem;
+  }
+  .benefit-card {
+    background: var(--dark3); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s;
+    text-align: center;
+  }
+  .benefit-card:hover { transform: translateY(-4px); }
+  .benefit-card--green { border-color: rgba(0,196,140,0.2); background: rgba(0,196,140,0.04); }
+  .benefit-card--green:hover { border-color: var(--green); }
+  .benefit-card--orange { border-color: rgba(255,107,53,0.2); background: rgba(255,107,53,0.04); }
+  .benefit-card--orange:hover { border-color: var(--orange); }
+  .benefit-icon { font-size: 2rem; margin-bottom: 0.6rem; display: block; }
+  .benefit-num {
+    font-size: 2.2rem; font-weight: 900; margin-bottom: 0.25rem;
+  }
+  .benefit-num--green {
+    background: linear-gradient(135deg, var(--green), #00e5a0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .benefit-num--orange {
+    background: linear-gradient(135deg, var(--orange), #f7c59f);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .benefit-label { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .benefit-desc  { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+  .benefit-source {
+    margin-top: 0.75rem; font-size: 0.68rem; color: rgba(230,237,243,0.3);
+    font-style: italic; border-top: 1px solid rgba(255,107,53,0.12); padding-top: 0.5rem;
+  }
+  .benefits-grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .benefits-grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .outcome-group-label {
+    font-size: 0.75rem; font-weight: 700; padding: 0.4rem 0.9rem;
+    border-radius: 999px; display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+  .outcome-group-label--green {
+    background: rgba(0,196,140,0.1); border: 1px solid rgba(0,196,140,0.25); color: var(--green);
+  }
+  .outcome-group-label--orange {
+    background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25); color: var(--orange);
+  }
+  .benefits-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; margin-bottom: 0.5rem;
+  }
+
+  /* ══════════════════════════════════
+     SECTION 5 — FEATURES
+  ══════════════════════════════════ */
+  #features {
+    background: radial-gradient(ellipse 60% 50% at 0% 100%, rgba(168,85,247,0.07) 0%, transparent 60%),
+                var(--dark);
+  }
+  .features-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; margin-bottom: 0.5rem;
+  }
+  .features-sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 2rem; }
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .feature-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; padding: 1.25rem;
+    transition: all 0.2s;
+  }
+  .feature-card:hover { border-color: var(--purple); background: rgba(168,85,247,0.05); }
+  .feature-icon { font-size: 1.75rem; margin-bottom: 0.6rem; display: block; }
+  .feature-name { font-size: 0.9rem; font-weight: 800; color: var(--text); margin-bottom: 0.3rem; }
+  .feature-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+  .demo-banner {
+    margin-top: 2rem;
+    background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(168,85,247,0.12));
+    border: 1px solid rgba(255,107,53,0.3);
+    border-radius: 14px; padding: 1.25rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .demo-icon { font-size: 2rem; animation: pulse 2s ease-in-out infinite; }
+  .demo-text strong { font-size: 0.95rem; color: var(--orange); display: block; margin-bottom: 0.2rem; }
+  .demo-text span { font-size: 0.82rem; color: var(--muted); }
+
+  /* ══════════════════════════════════
+     SECTION 6 — LEARNINGS
+  ══════════════════════════════════ */
+  #learnings {
+    background: radial-gradient(ellipse 60% 50% at 100% 0%, rgba(59,130,246,0.08) 0%, transparent 60%),
+                var(--dark2);
+  }
+  .learnings-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; margin-bottom: 2rem;
+  }
+  .learnings-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  }
+  .learning-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 12px; padding: 1rem 1.25rem;
+  }
+  .learning-item--green { background: rgba(0,196,140,0.05); border-color: rgba(0,196,140,0.18); }
+  .learning-item--orange { background: rgba(255,107,53,0.05); border-color: rgba(255,107,53,0.18); }
+  .learning-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4);
+    color: var(--blue); font-weight: 800; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .learning-num--green  { background: rgba(0,196,140,0.15); border-color: rgba(0,196,140,0.3); color: var(--green); }
+  .learning-num--orange { background: rgba(255,107,53,0.15); border-color: rgba(255,107,53,0.3); color: var(--orange); }
+  .learning-text strong { font-size: 0.88rem; color: var(--text); display: block; margin-bottom: 0.2rem; }
+  .learning-text span   { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+  /* ══════════════════════════════════
+     SECTION 7 — TEAM
+  ══════════════════════════════════ */
+  #team {
+    background: radial-gradient(ellipse 60% 50% at 50% 100%, rgba(255,107,53,0.07) 0%, transparent 60%),
+                var(--dark);
+    text-align: center;
+  }
+  .team-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; margin-bottom: 0.5rem;
+  }
+  .team-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2.5rem; }
+  .team-grid {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem;
+  }
+  .team-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 1.5rem 2rem; min-width: 160px;
+    transition: all 0.2s;
+  }
+  .team-card:hover { border-color: var(--orange); transform: translateY(-4px); }
+  .team-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), var(--green));
+    margin: 0 auto 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+  }
+  .team-name { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+  .team-role { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ══════════════════════════════════
+     SECTION 8 — PROMPTS
+  ══════════════════════════════════ */
+  #prompts {
+    background: radial-gradient(ellipse 60% 50% at 0% 50%, rgba(0,196,140,0.07) 0%, transparent 60%),
+                var(--dark2);
+  }
+  .prompts-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 900; margin-bottom: 0.5rem;
+  }
+  .prompts-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+  .prompt-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .prompt-item {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: rgba(0,196,140,0.05); border: 1px solid rgba(0,196,140,0.15);
+    border-radius: 12px; padding: 1rem 1.25rem;
+  }
+  .prompt-quote { font-size: 1.5rem; color: var(--green); line-height: 1; flex-shrink: 0; }
+  .prompt-text { font-size: 0.87rem; color: var(--text); line-height: 1.6; font-style: italic; }
+
+  /* ══════════════════════════════════
+     SECTION 9 — CLOSING
+  ══════════════════════════════════ */
+  #close {
+    background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(0,196,140,0.1), rgba(168,85,247,0.08)),
+                var(--dark);
+    text-align: center;
+  }
+  .close-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .close-sub { font-size: 1.1rem; color: var(--muted); max-width: 500px; margin: 0 auto 2rem; }
+  .close-emoji { font-size: 4rem; display: block; margin-bottom: 1rem; animation: float 2.5s ease-in-out infinite; }
+  .close-stack {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .close-tag {
+    display: flex; align-items: center; gap: 0.4rem;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.5rem 1.1rem; border-radius: 999px;
+    font-size: 0.82rem; color: var(--muted);
+  }
+
+  /* ════════════════ VS COMPARISON ════════════════ */
+  .vs-block {
+    margin-top: 2.5rem;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 2rem;
+  }
+  .vs-title { font-size: 1.1rem; font-weight: 900; color: var(--text); margin-bottom: 0.5rem; }
+  .vs-intro { font-size: 0.88rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .vs-table { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+  .vs-col { border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .vs-col--bad  { background: rgba(239,68,68,0.05);  border: 1px solid rgba(239,68,68,0.15); }
+  .vs-col--mid  { background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15); }
+  .vs-col--good { background: rgba(0,196,140,0.06);  border: 1px solid rgba(0,196,140,0.25); }
+  .vs-col-header {
+    font-size: 0.85rem; font-weight: 800; color: var(--text);
+    margin-bottom: 0.5rem; padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .vs-item { font-size: 0.78rem; line-height: 1.5; padding-left: 1.25rem; position: relative; }
+  .vs-item::before { position: absolute; left: 0; font-size: 0.8rem; }
+  .vs-item--no::before   { content: '✕'; color: #ef4444; }
+  .vs-item--half::before { content: '~'; color: #f59e0b; }
+  .vs-item--yes::before  { content: '✓'; color: var(--green); }
+  .vs-item--no   { color: rgba(230,237,243,0.45); }
+  .vs-item--half { color: rgba(230,237,243,0.55); }
+  .vs-item--yes  { color: var(--text); font-weight: 600; }
+  .vs-footer {
+    font-size: 0.82rem; color: var(--muted); text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1rem;
+  }
+  .vs-footer strong { color: var(--orange); }
+  .vs-experience {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    gap: 1rem; align-items: start; margin-bottom: 1.25rem;
+  }
+  .vs-exp-col { display: flex; flex-direction: column; gap: 0.6rem; }
+  .vs-exp-header {
+    font-size: 0.85rem; font-weight: 800; color: var(--text);
+    padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 0.25rem;
+  }
+  .vs-exp-col--chat  { }
+  .vs-exp-col--pantry { }
+  .vs-exp-divider {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 900; color: var(--muted);
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px; width: 36px; height: 36px; flex-shrink: 0; margin-top: 2rem;
+  }
+  .chat-bubble {
+    border-radius: 12px; padding: 0.65rem 0.85rem;
+    font-size: 0.77rem; line-height: 1.55;
+  }
+  .chat-bubble--user {
+    background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.2);
+    color: rgba(230,237,243,0.75);
+  }
+  .chat-bubble--ai {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: var(--muted);
+  }
+  .chat-meta { font-size: 0.72rem; color: #ef4444; font-style: italic; margin-top: 0.25rem; }
+  .pantry-step {
+    display: flex; align-items: flex-start; gap: 0.65rem;
+    background: rgba(0,196,140,0.05); border: 1px solid rgba(0,196,140,0.15);
+    border-radius: 10px; padding: 0.6rem 0.85rem;
+  }
+  .ps-num {
+    background: var(--green); color: #fff;
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 0.68rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .ps-text { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+  .ps-text strong { color: var(--green); }
+  .ps-text em { color: var(--text); font-style: normal; font-weight: 700; }
+  .pantry-result {
+    background: rgba(0,196,140,0.08); border: 1px solid rgba(0,196,140,0.25);
+    border-radius: 10px; padding: 0.75rem 1rem;
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .pr-item { font-size: 0.78rem; color: var(--text); font-weight: 600; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    .problem-grid, .solution-layout,
+    .benefits-grid, .benefits-grid--3, .benefits-grid--2,
+    .features-grid, .learnings-grid, .vs-table,
+    .vs-experience { grid-template-columns: 1fr; }
+    .vs-exp-divider { margin: 0 auto; }
+    .nav-dots { display: none; }
+    section { padding: 3rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV DOTS ── -->
+<nav class="nav-dots">
+  <a class="nav-dot" href="#hero"     title="Intro"></a>
+  <a class="nav-dot" href="#problem"  title="Problem"></a>
+  <a class="nav-dot" href="#solution" title="Solution"></a>
+  <a class="nav-dot" href="#benefits" title="Benefits"></a>
+  <a class="nav-dot" href="#features" title="Features"></a>
+  <a class="nav-dot" href="#learnings" title="Learnings"></a>
+  <a class="nav-dot" href="#team"     title="Team"></a>
+  <a class="nav-dot" href="#prompts"  title="Prompts"></a>
+  <a class="nav-dot" href="#close"    title="Close"></a>
+</nav>
+
+<!-- ══════════════════════════════════
+     1. HERO
+══════════════════════════════════ -->
+<section id="hero">
+  <div class="container fade-up">
+    <div style="text-align:center;">
+      <div class="hero-badge">✦ AI-Powered Recipe Assistant · Hackathon 2026</div>
+      <h1 class="hero-title">
+        Pantry<span class="gradient-text">Pal</span>
+      </h1>
+      <p class="hero-sub">
+        Turn leftover ingredients into personalised, health-aware recipes — powered by MiniMax AI on AWS Bedrock.
+      </p>
+      <div class="hero-pills">
+        <span class="pill pill-orange">🧠 MiniMax AI</span>
+        <span class="pill pill-green">☁️ AWS Bedrock</span>
+        <span class="pill pill-purple">⚡ Built in 1 Day</span>
+      </div>
+      <div class="hero-visual">
+        <span class="hero-emoji">🥕</span>
+        <span class="hero-emoji">🥦</span>
+        <span class="hero-emoji">🥘</span>
+        <span class="hero-emoji">🍳</span>
+        <span class="hero-emoji">🌿</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     2. PROBLEM
+══════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label">The Problem</div>
+    <h2 class="problem-headline">
+      Sound familiar?<br /><span>"What do I cook tonight?"</span>
+    </h2>
+    <p class="problem-desc" style="max-width:620px; margin-bottom:2rem;">
+      It's 7pm. Your fridge has chicken, some wilting spinach, half an onion.
+      You order takeaway — again. The spinach goes in the bin — again.
+      Now multiply that by 132 million households. That's the problem we set out to solve.
+    </p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <span class="problem-emoji">🗑️</span>
+        <div class="stat-num">1.3B</div>
+        <div class="stat-label">
+          tonnes of food wasted every year — <strong>1/3 of all food produced globally</strong>
+          <div class="stat-source">📖 FAO — Global Food Losses and Food Waste, 2011</div>
+        </div>
+      </div>
+      <div class="problem-card">
+        <span class="problem-emoji">💸</span>
+        <div class="stat-num">$1,300</div>
+        <div class="stat-label">
+          lost per household per year throwing away food they already paid for
+          <div class="stat-source">📖 USDA ERS — Household Food Waste Report, 2020</div>
+        </div>
+      </div>
+      <div class="problem-card">
+        <span class="problem-emoji">🌍</span>
+        <div class="stat-num">8–10%</div>
+        <div class="stat-label">
+          of global greenhouse gas emissions are caused by food waste alone
+          <div class="stat-source">📖 UNEP — Food Waste Index Report, 2021</div>
+        </div>
+      </div>
+      <div class="problem-card">
+        <span class="problem-emoji">🏥</span>
+        <div class="stat-num">6 in 10</div>
+        <div class="stat-label">
+          adults live with at least one chronic disease where diet is a key management factor
+          <div class="stat-source">📖 CDC — Chronic Diseases in America, 2023</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     3. SOLUTION
+══════════════════════════════════ -->
+<section id="solution">
+  <div class="container">
+    <div class="section-label" style="justify-content:center;">Our Solution</div>
+
+    <h2 class="solution-headline">
+      Open your fridge.<br />
+      <span class="gradient-text">We handle the rest.</span>
+    </h2>
+    <p class="solution-tagline">
+      PantryPal is an AI that turns whatever's in your kitchen into
+      healthy, personalised recipes — in under 10 seconds.
+    </p>
+
+    <div class="how-it-works">
+      <div class="hiw-step">
+        <span class="hiw-emoji">🧺</span>
+        <div class="hiw-title">Tell us what you have</div>
+        <div class="hiw-desc">Add the ingredients sitting in your fridge or pantry right now</div>
+      </div>
+      <div class="hiw-arrow">→</div>
+      <div class="hiw-step">
+        <span class="hiw-emoji">🩺</span>
+        <div class="hiw-title">Tell us how you eat</div>
+        <div class="hiw-desc">Diabetic? Vegan? Keto? Set it once — AI adapts every recipe to you</div>
+      </div>
+      <div class="hiw-arrow">→</div>
+      <div class="hiw-step">
+        <span class="hiw-emoji">🍽️</span>
+        <div class="hiw-title">Get 3 recipes. Cook.</div>
+        <div class="hiw-desc">Personalised, nutritionally balanced — tailored to your pantry and health</div>
+      </div>
+    </div>
+
+    <div class="solution-result">
+      <div class="result-stat">
+        <span class="result-num">&lt;10s</span>
+        <div class="result-label">to generate recipes</div>
+      </div>
+      <div class="result-divider"></div>
+      <div class="result-stat">
+        <span class="result-num">3</span>
+        <div class="result-label">personalised recipes</div>
+      </div>
+      <div class="result-divider"></div>
+      <div class="result-stat">
+        <span class="result-num">0</span>
+        <div class="result-label">food wasted</div>
+      </div>
+      <div class="result-divider"></div>
+      <div class="result-stat">
+        <span class="result-num">12+</span>
+        <div class="result-label">health conditions supported</div>
+      </div>
+    </div>
+
+    <div class="solution-stack">
+      <span class="tech-pill">🧠 MiniMax M2 on AWS Bedrock</span>
+      <span class="tech-pill">⚛️ React 18</span>
+      <span class="tech-pill">🐍 Python FastAPI</span>
+      <span class="tech-pill">☁️ AWS us-east-1</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     4. BENEFITS
+══════════════════════════════════ -->
+<section id="benefits">
+  <div class="container">
+    <div class="section-label">Impact &amp; Outcomes</div>
+    <h2 class="benefits-title">What we can prove — and what it could mean</h2>
+    <p style="color:var(--muted); font-size:0.88rem; margin-bottom:2rem; max-width:560px;">
+      The app is a working prototype. We split our outcomes honestly — what you can verify right now in the demo, and what the research tells us about real-world impact at scale.
+    </p>
+
+    <!-- Group 1: Proven today -->
+    <div class="outcome-group-label outcome-group-label--green">
+      ✅ Measurable today — demo this live
+    </div>
+    <div class="benefits-grid benefits-grid--3" style="margin-bottom:2rem;">
+      <div class="benefit-card benefit-card--green">
+        <span class="benefit-icon">⏱️</span>
+        <div class="benefit-num benefit-num--green">&lt;10s</div>
+        <div class="benefit-label">Recipe generation</div>
+        <div class="benefit-desc">From ingredients to 3 complete personalised recipes — timed in our own testing</div>
+      </div>
+      <div class="benefit-card benefit-card--green">
+        <span class="benefit-icon">🩺</span>
+        <div class="benefit-num benefit-num--green">12+</div>
+        <div class="benefit-label">Health conditions</div>
+        <div class="benefit-desc">Diabetes, hypertension, keto, vegan, nut allergy and more — built into the app today</div>
+      </div>
+      <div class="benefit-card benefit-card--green">
+        <span class="benefit-icon">🛒</span>
+        <div class="benefit-num benefit-num--green">1-click</div>
+        <div class="benefit-label">Shopping list</div>
+        <div class="benefit-desc">Missing ingredients across all 3 recipes aggregated and ready to copy — show this live</div>
+      </div>
+    </div>
+
+    <!-- Group 2: Projected -->
+    <div class="outcome-group-label outcome-group-label--orange">
+      📊 Projected impact — derived from published research
+    </div>
+    <div class="benefits-grid benefits-grid--2">
+      <div class="benefit-card benefit-card--orange">
+        <span class="benefit-icon">♻️</span>
+        <div class="benefit-num benefit-num--orange">~$325</div>
+        <div class="benefit-label">Estimated annual saving per household</div>
+        <div class="benefit-desc">
+          USDA reports the average household wastes $1,300/year in food.
+          If PantryPal helps use 25% of what would otherwise be thrown away, that's $325 back per family.
+        </div>
+        <div class="benefit-source">📖 USDA ERS — Household Food Waste, 2020</div>
+      </div>
+      <div class="benefit-card benefit-card--orange">
+        <span class="benefit-icon">🌍</span>
+        <div class="benefit-num benefit-num--orange">8–10%</div>
+        <div class="benefit-label">Of global emissions linked to food waste</div>
+        <div class="benefit-desc">
+          UNEP's Food Waste Index shows food waste drives 8–10% of global GHG emissions.
+          Tools that reduce household waste directly reduce this footprint.
+        </div>
+        <div class="benefit-source">📖 UNEP — Food Waste Index Report, 2021</div>
+      </div>
+    </div>
+
+    <!-- Why not ChatGPT -->
+    <div class="vs-block">
+      <div class="vs-title">💬 "Can't I just type my ingredients into ChatGPT?"</div>
+      <p class="vs-intro">
+        Yes — you absolutely can. Here's what that actually looks like versus PantryPal.
+      </p>
+
+      <!-- Side by side experience -->
+      <div class="vs-experience">
+        <div class="vs-exp-col vs-exp-col--chat">
+          <div class="vs-exp-header">🤖 Using ChatGPT / Gemini</div>
+          <div class="chat-bubble chat-bubble--user">
+            "Give me a recipe with chicken, spinach, onion. I have type 2 diabetes, I'm lactose intolerant, and I prefer high protein meals. Make it low glycaemic, avoid refined carbs, give me nutrition info, a shopping list for what I'm missing, and step-by-step instructions."
+          </div>
+          <div class="chat-bubble chat-bubble--ai">Here's a recipe… <span style="color:rgba(255,255,255,0.3)">[wall of unstructured text]</span></div>
+          <div class="chat-bubble chat-bubble--user">"Now give me the nutrition breakdown per serving"</div>
+          <div class="chat-bubble chat-bubble--ai">Sure, here are the approximate values…</div>
+          <div class="chat-bubble chat-bubble--user">"Now make it for 4 people instead of 2"</div>
+          <div class="chat-bubble chat-bubble--ai">Adjusted recipe…</div>
+          <div class="chat-meta">⏱ 5–8 min of back and forth. Tomorrow? Start over.</div>
+        </div>
+
+        <div class="vs-exp-divider">VS</div>
+
+        <div class="vs-exp-col vs-exp-col--pantry">
+          <div class="vs-exp-header">🥘 Using PantryPal</div>
+          <div class="pantry-step">
+            <span class="ps-num">1</span>
+            <span class="ps-text">Add ingredients with quick-tap chips — <strong>20 seconds</strong></span>
+          </div>
+          <div class="pantry-step">
+            <span class="ps-num">2</span>
+            <span class="ps-text">Tick your conditions once — <strong>saved forever</strong></span>
+          </div>
+          <div class="pantry-step">
+            <span class="ps-num">3</span>
+            <span class="ps-text">Click <em>Find My Recipes</em> — <strong>done in &lt;10s</strong></span>
+          </div>
+          <div class="pantry-result">
+            <div class="pr-item">✓ 3 structured recipe cards</div>
+            <div class="pr-item">✓ Nutrition per serving — auto-scaled</div>
+            <div class="pr-item">✓ Shopping list in one click</div>
+            <div class="pr-item">✓ Step-by-step cooking mode</div>
+            <div class="pr-item">✓ Saved for next time</div>
+          </div>
+          <div class="chat-meta" style="color:var(--green);">⏱ Under 60 seconds. Every time. No re-typing.</div>
+        </div>
+      </div>
+
+      <p class="vs-footer">
+        ChatGPT is a <strong>conversation</strong>. PantryPal is a <strong>kitchen tool</strong>. The difference is like using Excel to track your finances vs building a banking app — same data, completely different experience.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     5. FEATURES + DEMO
+══════════════════════════════════ -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">Key Features</div>
+    <h2 class="features-title">Everything you need, nothing you don't</h2>
+    <p class="features-sub">Built in a single day — six features that make a real difference.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🧺</span>
+        <div class="feature-name">Smart Pantry Input</div>
+        <div class="feature-desc">Quick-add chips + free text. Add ingredients in seconds with common shortcuts.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🩺</span>
+        <div class="feature-name">Health Profile</div>
+        <div class="feature-desc">Chronic conditions, dietary restrictions, lifestyle goals — all influence the AI output.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">❤️</span>
+        <div class="feature-name">Save Favourites</div>
+        <div class="feature-desc">Heart any recipe to save it locally. Revisit anytime from the Saved tab.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛒</span>
+        <div class="feature-name">Shopping List</div>
+        <div class="feature-desc">One click generates a checklist of needed items. Copy to clipboard instantly.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">👤</span>
+        <div class="feature-name">Serving Adjuster</div>
+        <div class="feature-desc">Scale from 1 to 12 servings. Nutritional values recalculate automatically.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">👨‍🍳</span>
+        <div class="feature-name">Cooking Mode</div>
+        <div class="feature-desc">Full-screen step-by-step view. Progress bar, keyboard nav, screen stays on.</div>
+      </div>
+    </div>
+    <div class="demo-banner">
+      <span class="demo-icon">🎬</span>
+      <div class="demo-text">
+        <strong>Live Demo — let's cook something right now</strong>
+        <span>Add a few ingredients, set a health condition, hit Find My Recipes — watch the AI work</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     6. LEARNINGS
+══════════════════════════════════ -->
+<section id="learnings">
+  <div class="container">
+    <div class="section-label">What We Learnt</div>
+    <h2 class="learnings-title">What we learnt building with AI</h2>
+    <p style="color:var(--muted); font-size:0.88rem; margin-bottom:2rem; max-width:580px;">
+      We used Claude Code as our AI pair programmer throughout this hackathon.
+      Here's what we genuinely took away — the good and the honest.
+    </p>
+
+    <!-- What worked -->
+    <div class="outcome-group-label outcome-group-label--green" style="margin-bottom:1rem;">
+      ✅ What worked really well
+    </div>
+    <div class="learnings-grid" style="margin-bottom:2rem;">
+      <div class="learning-item learning-item--green">
+        <div class="learning-num learning-num--green">⚡</div>
+        <div class="learning-text">
+          <strong>AI as an efficiency multiplier</strong>
+          <span>We built a full-stack app — backend, frontend, dark/light theme, 6 features — in a single day. That's not possible without AI assistance.</span>
+        </div>
+      </div>
+      <div class="learning-item learning-item--green">
+        <div class="learning-num learning-num--green">🧹</div>
+        <div class="learning-text">
+          <strong>Boilerplate disappears instantly</strong>
+          <span>Setup, config, repetitive code, CSS structure — AI handled all of it. We spent our time on the actual problem, not plumbing.</span>
+        </div>
+      </div>
+      <div class="learning-item learning-item--green">
+        <div class="learning-num learning-num--green">🎯</div>
+        <div class="learning-text">
+          <strong>Focus shifts to problem solving</strong>
+          <span>Coding is only 15–20% of solving a real problem. The rest is understanding the user, defining the right question, and making design decisions. AI takes care of the 15% — so you invest your energy in the 85% that actually creates value.</span>
+        </div>
+      </div>
+      <div class="learning-item learning-item--green">
+        <div class="learning-num learning-num--green">✂️</div>
+        <div class="learning-text">
+          <strong>Brilliant for small, well-defined tasks</strong>
+          <span>"Add a serving size adjuster that scales nutrition values" — gave us working code in seconds. Clear task, clear output.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Watch-outs -->
+    <div class="outcome-group-label outcome-group-label--orange" style="margin-bottom:1rem;">
+      ⚠️ Watch-outs — being honest
+    </div>
+    <div class="learnings-grid">
+      <div class="learning-item learning-item--orange">
+        <div class="learning-num learning-num--orange">💸</div>
+        <div class="learning-text">
+          <strong>Cost is a real overhead</strong>
+          <span>Every API call to AWS Bedrock has a price. For a free consumer tool, this model needs careful thought — free tier or subscription pricing would be needed at scale.</span>
+        </div>
+      </div>
+      <div class="learning-item learning-item--orange">
+        <div class="learning-num learning-num--orange">🌀</div>
+        <div class="learning-text">
+          <strong>AI Hallucinates</strong>
+          <span>When we switched our AI assistant from an OpenAI key to the AWS Bedrock key mid-build, it started suggesting incorrect code and confidently referencing APIs that didn't exist. Same question, different model — completely different reliability. AI doesn't flag when it's guessing.</span>
+        </div>
+      </div>
+      <div class="learning-item learning-item--orange">
+        <div class="learning-num learning-num--orange">🧭</div>
+        <div class="learning-text">
+          <strong>Easy to drift from the goal</strong>
+          <span>AI suggestions can pull you toward interesting features that aren't core. We had to consciously ask "does this solve the original problem?" to stay on track.</span>
+        </div>
+      </div>
+      <div class="learning-item learning-item--orange">
+        <div class="learning-num learning-num--orange">🧩</div>
+        <div class="learning-text">
+          <strong>Struggles with complex, ambiguous problems</strong>
+          <span>AI excels at clear tasks. When requirements were vague or multi-layered, output quality dropped. Human judgement is still essential for architecture decisions.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     7. TEAM
+══════════════════════════════════ -->
+<section id="team">
+  <div class="container">
+    <div class="section-label" style="justify-content:center;">The Team</div>
+    <h2 class="team-title">Built by humans, powered by AI</h2>
+    <p class="team-sub">Every member contributed ideas, code, and creativity under the clock.</p>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">👨‍💻</div>
+        <div class="team-name">Team Member 1</div>
+        <div class="team-role">Full Stack / AI</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">👩‍💻</div>
+        <div class="team-name">Team Member 2</div>
+        <div class="team-role">Frontend / UX</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">🧑‍💻</div>
+        <div class="team-name">Team Member 3</div>
+        <div class="team-role">Backend / Infra</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">👨‍🎨</div>
+        <div class="team-name">Team Member 4</div>
+        <div class="team-role">Design / Demo</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     8. PROMPTS
+══════════════════════════════════ -->
+<section id="prompts">
+  <div class="container">
+    <div class="section-label">AI-Assisted Development</div>
+    <h2 class="prompts-title">How we built it — with prompts</h2>
+    <p class="prompts-sub">
+      PantryPal was built using Claude Code as an AI pair programmer.
+      Here are the key prompts that shaped the product.
+    </p>
+    <div class="prompt-list">
+      <div class="prompt-item">
+        <span class="prompt-quote">"</span>
+        <div class="prompt-text">We are participating in a hackathon on AI ideas. We plan to build a webapp for food/dish recommendations — recommend a dish which we can prepare from the leftover food items at home. Name of the assistant is PantryPal.</div>
+      </div>
+      <div class="prompt-item">
+        <span class="prompt-quote">"</span>
+        <div class="prompt-text">Build something eye-catching UI. It will take the list of ingredients from the user and return a healthy recipe. It will also take user health conditions data and suggest recipes based on it.</div>
+      </div>
+      <div class="prompt-item">
+        <span class="prompt-quote">"</span>
+        <div class="prompt-text">Let's add: Save/favourite recipes, Shopping list, Serving size adjuster, and Cooking mode — full-screen step-by-step view with a progress bar that keeps the screen awake during cooking.</div>
+      </div>
+      <div class="prompt-item">
+        <span class="prompt-quote">"</span>
+        <div class="prompt-text">All together a new UI as per the current market trends for a food app — with dark/light theme toggle.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     9. CLOSING
+══════════════════════════════════ -->
+<section id="close">
+  <div class="container">
+    <span class="close-emoji">🥘</span>
+    <h2 class="close-title">
+      Less waste.<br />
+      <span class="gradient-text">Better meals.</span><br />
+      Healthier you.
+    </h2>
+    <p class="close-sub">
+      PantryPal is not just a hackathon project — it's a solution real households need today.
+    </p>
+    <div class="close-stack">
+      <span class="close-tag">🧠 MiniMax M2</span>
+      <span class="close-tag">☁️ AWS Bedrock</span>
+      <span class="close-tag">⚛️ React 18</span>
+      <span class="close-tag">🐍 Python FastAPI</span>
+      <span class="close-tag">🌐 github.com/manthan-joshi-ai/pantrypal</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
