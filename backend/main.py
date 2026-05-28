@@ -3,8 +3,8 @@ import json
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
-from models import HealthProfile, ImageRecommendResponse, RecommendRequest, RecommendResponse, ChefChatRequest, ChefChatResponse
-from bedrock import analyze_food_image, get_recommendations, chef_chat
+from .models import HealthProfile, ImageRecommendResponse, RecommendRequest, RecommendResponse, ChefChatRequest, ChefChatResponse
+from .bedrock import analyze_food_image, get_recommendations, chef_chat
 
 app = FastAPI(title="PantryPal API", version="1.0.0")
 

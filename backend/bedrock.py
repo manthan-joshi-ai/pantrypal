@@ -4,7 +4,7 @@ import json
 import base64
 import anthropic
 from dotenv import load_dotenv
-from models import (
+from .models import (
     ImageAnalysisItem,
     Ingredient,
     RecommendRequest,
