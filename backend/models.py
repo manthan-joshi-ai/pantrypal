@@ -17,6 +17,7 @@ class RecommendRequest(BaseModel):
     ingredients: List[Ingredient]
     health_profile: HealthProfile
     recipe_count: int = Field(3, ge=1, le=5)
+    dish_name: Optional[str] = ""
 
 class NutritionalInfo(BaseModel):
     calories: Optional[str] = ""

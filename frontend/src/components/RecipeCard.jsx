@@ -185,13 +185,13 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecip
               </div>
             </div>
 
-            {/* Start Cooking button */}
-            {canCook && (
-              <button className="start-cooking-btn" onClick={startCooking}>
-                👨‍🍳 Start Cooking Mode
-              </button>
-            )}
+            {/* Action buttons */}
             <div className="rcard-actions">
+              {canCook && (
+                <button className="start-cooking-btn" onClick={startCooking}>
+                  👨‍🍳 Start Cooking Mode
+                </button>
+              )}
               <button
                 className={`chat-chef-btn ${chatOpen ? 'chat-chef-btn--active' : ''}`}
                 onClick={() => setChatOpen(c => !c)}

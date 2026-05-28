@@ -4,7 +4,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 from models import HealthProfile, ImageRecommendResponse, RecommendRequest, RecommendResponse, ChefChatRequest, ChefChatResponse
-from recommendation import analyze_food_image, get_recommendations, chef_chat
+from bedrock import analyze_food_image, get_recommendations, chef_chat
 
 app = FastAPI(title="PantryPal API", version="1.0.0")
 
@@ -73,6 +73,7 @@ async def recommend_from_image(
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image recommendation failed: {str(e)}")
+
 
 @app.post("/api/chat", response_model=ChefChatResponse)
 def chat(req: ChefChatRequest):
