@@ -8,6 +8,7 @@ const SECTIONS = [
 
 export default function HealthPanel({ profile, onChange }) {
   const [customValue, setCustomValue] = useState({ chronic: '', dietary: '', lifestyle: '' });
+
   const toggle = (key, val) => {
     const list = profile[key];
     onChange({ ...profile, [key]: list.includes(val) ? list.filter(x => x !== val) : [...list, val] });
@@ -59,6 +60,7 @@ export default function HealthPanel({ profile, onChange }) {
               );
             })}
           </div>
+
           <div className="hp-custom-row">
             <input
               className="dark-inp"

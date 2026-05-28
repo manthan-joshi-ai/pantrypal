@@ -59,6 +59,9 @@ export default function App() {
   const [showShoppingList, setShowShoppingList] = useState(false);
   const [showRecipeTrackerModal, setShowRecipeTrackerModal] = useState(false);
   const [recipeCount, setRecipeCount] = useState(3);
+  const [customRecipeInput, setCustomRecipeInput] = useState('');
+  const [recipeCountError, setRecipeCountError] = useState('');
+  const [dishName, setDishName] = useState('');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -166,7 +169,7 @@ export default function App() {
     setImageAnalysis([]);
     setResultsView('results');
     try {
-      const data = await getRecommendations(ingredients, health, recipeCount);
+      const data = await getRecommendations(ingredients, health, recipeCount, dishName);
       setRecipes(data.recipes || []);
       setTimeout(() => {
         document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
@@ -250,6 +253,9 @@ export default function App() {
           </p>
           <div className="hero-stats">
             <div className="stat"><span>{recipeCount}</span><p>Recipes per search</p></div>
+            <div className="stat-divider" />
+            <div className="stat"><span>AI</span><p>Powered by Claude</p></div>
+            <div className="stat-divider" />
             <button type="button" className="stat stat-button" onClick={() => setShowRecipeTrackerModal(true)}>
               <div>
                 <span>{heroWastePct}%</span>
@@ -258,7 +264,7 @@ export default function App() {
               <div className="hero-stat">
                 <span>Track Now</span>
               </div>
-              </button>
+            </button>
           </div>
         </div>
         <div className="hero-visual">
@@ -336,10 +342,67 @@ export default function App() {
 
           {error && <div className="error-toast">⚠ {error}</div>}
 
+          <div className="dish-request-row">
+            <span className="dish-request-label">🍽 Have a dish in mind? <span>(optional)</span></span>
+            <input
+              className="dark-inp dish-request-input"
+              type="text"
+              placeholder="e.g. Pasta, Biryani, Stir fry…"
+              value={dishName}
+              onChange={e => setDishName(e.target.value)}
+            />
+          </div>
+
           <div className="cta-area">
             <div className="cta-meta">
               <div className="cta-pill">🧺 {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}</div>
               {totalHealth > 0 && <div className="cta-pill cta-pill--green">🩺 {totalHealth} health filter{totalHealth !== 1 ? 's' : ''}</div>}
+            </div>
+            <div className="recipe-count-row">
+              <span className="recipe-label">📊 Recipes</span>
+              <div className="recipe-preset-btns">
+                {[1, 2, 3].map(num => (
+                  <button
+                    key={num}
+                    className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
+                    onClick={() => {
+                      setRecipeCount(num);
+                      setCustomRecipeInput('');
+                    }}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <div className="recipe-custom">
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  placeholder="Custom (max 5)"
+                  value={recipeCount > 3 ? customRecipeInput : ''}
+                  onChange={e => {
+                    const input = e.target.value;
+                    setCustomRecipeInput(input);
+                    if (input === '') {
+                      setRecipeCountError('');
+                    } else {
+                      const num = Number(input);
+                      if (!isNaN(num) && num > 5) {
+                        setRecipeCountError('Only 5 recipes allowed as of now.');
+                      } else if (!isNaN(num) && num >= 1) {
+                        setRecipeCountError('');
+                        setRecipeCount(num);
+                      }
+                    }
+                  }}
+                />
+                {recipeCountError && (
+                  <div style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.35rem' }}>
+                    ⚠ {recipeCountError}
+                  </div>
+                )}
+              </div>
             </div>
             <button className="btn-cta" onClick={handleFind} disabled={loading || ingredients.length === 0}>
               {loading
@@ -464,7 +527,7 @@ export default function App() {
       <footer className="footer">
         <span>🥘 PantryPal</span>
         <span>·</span>
-        <span>Powered by Ollama AI</span>
+        <span>Powered by Claude (Anthropic)</span>
         <span>·</span>
         <span>2026</span>
       </footer>

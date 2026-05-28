@@ -490,6 +490,28 @@ body {
 .hp-chip:hover { background: rgba(0,196,140,0.08); border-color: rgba(0,196,140,0.25); color: var(--green); }
 .hp-chip--active { background: rgba(0,196,140,0.12); border-color: rgba(0,196,140,0.38); color: var(--green); font-weight: 600; }
 .hp-check { font-size: 0.7rem; }
+.hp-custom-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.hp-custom-row .dark-inp {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+.hp-custom-add {
+  min-width: 90px;
+  background: rgba(0,196,140,0.15);
+  border: 1px solid rgba(0,196,140,0.25);
+  border-radius: 999px;
+  color: var(--green);
+  font-weight: 700;
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s;
+}
+.hp-custom-add:hover { transform: translateY(-1px); background: rgba(0,196,140,0.2); }
 .hp-notes { margin-top: 0.5rem; }
 .hp-custom-row {
   display: flex;
@@ -521,6 +543,19 @@ body {
 }
 .dark-textarea::placeholder { color: var(--text-dim); }
 .dark-textarea:focus { border-color: rgba(0,196,140,0.45); }
+
+/* ════════════════ DISH REQUEST ════════════════ */
+.dish-request-row {
+  display: flex; align-items: center; gap: 0.85rem;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 0.85rem 1.25rem;
+  margin-bottom: 0.75rem; flex-wrap: wrap;
+}
+.dish-request-label {
+  font-size: 0.88rem; font-weight: 700; color: var(--text); white-space: nowrap; flex-shrink: 0;
+}
+.dish-request-label span { color: var(--text-muted); font-weight: 400; }
+.dish-request-input { flex: 1; min-width: 200px; }
 
 /* Waste analytics */
 .waste-tracker {
@@ -745,7 +780,7 @@ body {
   border-radius: var(--radius); padding: 1rem 1.5rem;
   gap: 1rem; flex-wrap: wrap;
 }
-recipe-count-row {
+.recipe-count-row {
   display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
   color: var(--text);
 }
@@ -774,6 +809,14 @@ recipe-count-row {
   width: 100%; background: var(--inp-bg); border: 1px solid var(--inp-border);
   border-radius: var(--radius-xs); padding: 0.5rem 0.65rem;
   color: var(--text); font-size: 0.8rem; text-align: center;
+}
+.recipe-custom input::-webkit-outer-spin-button,
+.recipe-custom input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.recipe-custom input[type=number] {
+  -moz-appearance: textfield;
 }
 .recipe-custom input::placeholder {
   color: var(--text-dim);
@@ -1049,10 +1092,8 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
 .rcard-actions {
   display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap;
 }
-
 .start-cooking-btn {
   flex: 1; min-width: 180px;
-  display: block; width: 100%; margin-top: 1.25rem;
   padding: 0.85rem 1.5rem; border-radius: var(--radius-sm);
   background: linear-gradient(135deg, var(--orange), #f7c59f);
   border: none; color: #fff; font-size: 0.95rem; font-weight: 700;

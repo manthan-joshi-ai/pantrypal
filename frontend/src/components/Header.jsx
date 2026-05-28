@@ -13,7 +13,7 @@ export default function Header({ theme, onToggleTheme }) {
           <span className="brand-tag">AI Chef</span>
         </div>
         <nav className="header-nav">
-          <span className="nav-badge nav-badge--orange">🤖 Ollama AI</span>
+          <span className="nav-badge nav-badge--orange">🤖 Claude AI</span>
           <span className="nav-badge nav-badge--green">🩺 Health-Aware</span>
           <span className="nav-badge nav-badge--purple">📊 Recipe Tracker</span>
           <button className="theme-toggle" onClick={onToggleTheme} title="Toggle theme">
@@ -57,21 +57,21 @@ export default function Header({ theme, onToggleTheme }) {
                 <div className="stack-bar">
                   <span className="stack-pill stack-pill--react">React</span>
                   <span className="stack-pill stack-pill--fastapi">FastAPI</span>
-                  <span className="stack-pill stack-pill--ollama">Ollama</span>
+                  <span className="stack-pill stack-pill--ollama">Claude</span>
                 </div>
                 <div className="stack-detail">
                   <span>React UI drives ingredient input, layout, and modal interactions.</span>
                   <span>FastAPI powers the backend API, validation, and data orchestration.</span>
-                  <span>Ollama provides the AI prompt engine for recipe and nutrition responses.</span>
+                  <span>Claude (Anthropic) provides the AI engine for recipes, image analysis, and nutrition.</span>
                 </div>
               </div>
             </div>
             <div className="info-modal-body">
               <p><strong>Human intervention:</strong> user input of ingredients, health profile selection, recipe review, and manual overrides.</p>
-              <p><strong>AI-powered:</strong> Ollama model generation for recipes, image analysis for food recognition, nutrition inference, and recommendation ranking.</p>
+              <p><strong>AI-powered:</strong> Claude (Anthropic) for recipe generation, image analysis for food recognition, nutrition inference, and recommendation ranking.</p>
               <ul>
-                <li><strong>AI model:</strong> Ollama (`phi3:mini` by default)</li>
-                <li><strong>Image analysis:</strong> backend image recognition flow</li>
+                <li><strong>AI model:</strong> Claude Sonnet (claude-sonnet-4-6)</li>
+                <li><strong>Image analysis:</strong> Claude vision for food recognition</li>
                 <li><strong>Frontend:</strong> React + Vite with FastAPI backend</li>
                 <li><strong>Backend:</strong> FastAPI, Pydantic, Requests</li>
               </ul>

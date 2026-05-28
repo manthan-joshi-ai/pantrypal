@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PantryPal — Hackathon Pitch</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0d1117;
+      --bg-2:         #161b22;
+      --bg-3:         #21262d;
+      --glass:        rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.09);
+      --orange:       #ff6b35;
+      --green:        #00c48c;
+      --purple:       #a855f7;
+      --text:         #e6edf3;
+      --text-muted:   rgba(230,237,243,0.55);
+      --text-dim:     rgba(230,237,243,0.30);
+      --glow-a:       rgba(255,107,53,0.08);
+      --glow-b:       rgba(0,196,140,0.07);
+      --glow-c:       rgba(168,85,247,0.04);
+      --radius:       16px;
+      --radius-sm:    10px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Animated background glow ── */
+    .app { position: relative; min-height: 100vh; }
+    .app::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10%   0%, var(--glow-a) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, var(--glow-b) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50%  50%, var(--glow-c) 0%, transparent 70%);
+    }
+    .app > * { position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand-logo {
+      font-size: 1.8rem;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px rgba(255,107,53,0.4));
+    }
+    .brand-name {
+      font-size: 1.45rem; font-weight: 800; letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--orange), #ff9966);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .brand-tag {
+      background: rgba(255,107,53,0.12); color: var(--orange);
+      border: 1px solid rgba(255,107,53,0.25);
+      border-radius: 20px; padding: 0.15rem 0.65rem;
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .header-nav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .nav-badge {
+      border-radius: 20px; padding: 0.28rem 0.8rem;
+      font-size: 0.74rem; font-weight: 600; border: 1px solid;
+    }
+    .nav-badge--orange { background: rgba(255,107,53,0.10); color: var(--orange); border-color: rgba(255,107,53,0.22); }
+    .nav-badge--green  { background: rgba(0,196,140,0.10);  color: var(--green);  border-color: rgba(0,196,140,0.22); }
+    .nav-badge--purple { background: rgba(168,85,247,0.10); color: var(--purple); border-color: rgba(168,85,247,0.22); }
+
+    /* ── Sections ── */
+    section {
+      max-width: 1200px; margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+    section.full-bleed { max-width: none; padding: 0; }
+    .section-divider { border: none; border-top: 1px solid var(--glass-border); margin: 0 2rem; }
+
+    /* ── Section label ── */
+    .section-label {
+      display: inline-flex; align-items: center;
+      background: rgba(255,107,53,0.10); color: var(--orange);
+      border: 1px solid rgba(255,107,53,0.20); border-radius: 20px;
+      padding: 0.35rem 1rem; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px;
+      margin-bottom: 1.25rem;
+    }
+    .section-label--green {
+      background: rgba(0,196,140,0.10); color: var(--green);
+      border-color: rgba(0,196,140,0.22);
+    }
+    .section-label--purple {
+      background: rgba(168,85,247,0.10); color: var(--purple);
+      border-color: rgba(168,85,247,0.22);
+    }
+
+    /* ── Hero ── */
+    #hero {
+      max-width: 1200px; margin: 0 auto;
+      padding: 5rem 2rem 4rem;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center; gap: 3rem;
+    }
+    .hero-title {
+      font-size: clamp(2.4rem, 5vw, 3.5rem); font-weight: 900;
+      line-height: 1.15; letter-spacing: -1px; margin-bottom: 1.1rem;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, var(--orange), #ffd700, var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      background-size: 200%; animation: gradShift 4s ease infinite;
+    }
+    .hero-sub { font-size: 1.05rem; color: var(--text-muted); line-height: 1.7; max-width: 480px; margin-bottom: 2rem; }
+    .hero-stats { display: flex; align-items: center; gap: 1.5rem; }
+    .hero-stat span {
+      display: block; font-size: 1.6rem; font-weight: 900;
+      background: linear-gradient(90deg, var(--orange), #ffd700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-stat p { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .stat-divider { width: 1px; height: 40px; background: var(--glass-border); }
+
+    /* Food orbit */
+    .hero-visual { display: flex; align-items: center; justify-content: center; }
+    .food-orbit {
+      position: relative; width: 300px; height: 300px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .orbit-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 1px dashed rgba(255,107,53,0.2);
+      animation: spinSlow 20s linear infinite;
+    }
+    .orbit-center { font-size: 3.8rem; z-index: 2; animation: float 3s ease-in-out infinite; }
+    .orbit-item {
+      position: absolute; font-size: 1.7rem;
+      --angle: calc(var(--i) / var(--total) * 360deg);
+      transform: rotate(var(--angle)) translateX(120px) rotate(calc(-1 * var(--angle)));
+      animation: float calc(2s + var(--i) * 0.3s) ease-in-out infinite;
+    }
+
+    /* ── Glass card ── */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border); border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .glass-card:hover {
+      border-color: rgba(255,255,255,0.18);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    }
+
+    /* ── Scene quote card ── */
+    .scene-card {
+      background: var(--bg-2); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 2.25rem 2.5rem;
+      position: relative; overflow: hidden; margin-bottom: 2rem;
+    }
+    .scene-card::before {
+      content: '"';
+      position: absolute; top: -1.5rem; left: 1.5rem;
+      font-size: 8rem; font-weight: 900; color: var(--orange); opacity: 0.08;
+      line-height: 1; font-family: Georgia, serif;
+    }
+    .scene-card p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      font-style: italic; color: var(--text); line-height: 1.8;
+    }
+    .scene-card-attr {
+      margin-top: 1rem; font-size: 0.82rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .scene-card-attr::before { content: '—'; }
+
+    /* ── Section heading ── */
+    h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+    h2 .hl { color: var(--orange); }
+    .section-sub { color: var(--text-muted); font-size: 1rem; line-height: 1.7; max-width: 600px; margin-bottom: 2rem; }
+
+    /* ── Stat grid (problem) ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin: 2rem 0; }
+    .stat-card {
+      background: var(--bg-2); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 1.75rem 1.5rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(255,107,53,0.35); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .stat-big {
+      font-size: 2.8rem; font-weight: 900;
+      background: linear-gradient(90deg, var(--orange), #ffd700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1; margin-bottom: 0.5rem;
+    }
+    .stat-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Feature grid (solution) ── */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 2rem; }
+    .feature-card {
+      background: var(--bg-2); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 1.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover { border-color: rgba(255,255,255,0.18); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .feature-icon-wrap {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1rem;
+    }
+    .fi--orange { background: rgba(255,107,53,0.12); }
+    .fi--green  { background: rgba(0,196,140,0.12);  }
+    .fi--purple { background: rgba(168,85,247,0.12); }
+    .fi--gold   { background: rgba(255,215,0,0.10);  }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feature-card p  { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── Steps (how it works) ── */
+    .steps-flow { display: flex; flex-direction: column; gap: 0; max-width: 680px; position: relative; margin-top: 2rem; }
+    .steps-flow::before {
+      content: ''; position: absolute; left: 1.375rem; top: 1.5rem; bottom: 1.5rem; width: 2px;
+      background: linear-gradient(to bottom, var(--orange), var(--green), transparent);
+    }
+    .step-row { display: flex; gap: 1.5rem; align-items: flex-start; padding-bottom: 2rem; }
+    .step-num {
+      flex-shrink: 0; width: 2.75rem; height: 2.75rem; border-radius: 50%;
+      background: linear-gradient(135deg, var(--orange), #ff9a00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.88rem; font-weight: 800; color: #fff;
+      position: relative; z-index: 1;
+      box-shadow: 0 4px 12px rgba(255,107,53,0.3);
+    }
+    .step-content h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .step-content p  { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ── Claude card ── */
+    .claude-card {
+      background: var(--bg-2);
+      border: 1px solid rgba(168,85,247,0.2);
+      border-radius: var(--radius); padding: 2rem 2.5rem; max-width: 720px;
+    }
+    .claude-powered {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
+    }
+    .claude-badge {
+      background: rgba(168,85,247,0.12); color: var(--purple);
+      border: 1px solid rgba(168,85,247,0.28);
+      border-radius: 20px; padding: 0.28rem 0.85rem;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
+    }
+    .claude-points { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+    .claude-points li {
+      display: flex; gap: 0.85rem; align-items: flex-start;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+    .claude-bullet {
+      flex-shrink: 0; margin-top: 0.1rem;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; color: var(--purple);
+    }
+    .claude-points strong { color: var(--text); }
+
+    /* ── Impact grid ── */
+    .impact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin: 2rem 0; }
+    .impact-card {
+      background: var(--bg-2); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 1.75rem 1.5rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .impact-card:hover { border-color: rgba(0,196,140,0.35); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .impact-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .impact-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .impact-card p  { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Tagline ── */
+    .tagline-block { text-align: center; margin-top: 3rem; }
+    .tagline-big {
+      font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900;
+      letter-spacing: -1px; line-height: 1.2; margin-bottom: 0.75rem;
+      background: linear-gradient(90deg, var(--orange), #ffd700, var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      background-size: 200%; animation: gradShift 4s ease infinite;
+    }
+    .tagline-sub { color: var(--text-muted); font-size: 1.05rem; }
+
+    /* ── Tech pills ── */
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.75rem; }
+    .pill {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 0.4rem 1rem;
+      font-size: 0.82rem; font-weight: 600; color: var(--text-muted);
+      display: flex; align-items: center; gap: 0.45rem;
+    }
+    .pill--orange { background: rgba(255,107,53,0.10); border-color: rgba(255,107,53,0.25); color: var(--orange); }
+    .pill--green  { background: rgba(0,196,140,0.10);  border-color: rgba(0,196,140,0.25);  color: var(--green); }
+    .pill--purple { background: rgba(168,85,247,0.10); border-color: rgba(168,85,247,0.25); color: var(--purple); }
+
+    /* ── Footer ── */
+    footer {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.75rem; padding: 1.5rem 2rem;
+      border-top: 1px solid var(--glass-border);
+      font-size: 0.78rem; color: var(--text-dim); flex-wrap: wrap;
+      position: relative; z-index: 1;
+    }
+
+    /* ── CTA button ── */
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      background: linear-gradient(135deg, #ff6b35, #ff9a00, #ffd700);
+      background-size: 200%;
+      color: white; border: none; border-radius: 12px;
+      padding: 0.85rem 2.2rem; font-size: 1rem; font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255,107,53,0.35);
+      text-decoration: none;
+      animation: gradSlide 3s ease infinite;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,107,53,0.5); }
+
+    /* ── Animations ── */
+    @keyframes float     { 0%,100% { transform: translateY(0);    } 50% { transform: translateY(-4px); } }
+    @keyframes spinSlow  { to { transform: rotate(360deg); } }
+    @keyframes gradShift { 0%,100% { background-position: 0%;   } 50% { background-position: 100%; } }
+    @keyframes gradSlide { 0%,100% { background-position: 0%;   } 50% { background-position: 100%; } }
+    @keyframes fadeInUp  { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes popIn     { from { opacity:0; transform:scale(0.85); }     to { opacity:1; transform:scale(1); }  }
+
+    /* Scroll fade-in */
+    .fade { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .fade.in { opacity: 1; transform: translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      #hero { grid-template-columns: 1fr; padding: 3.5rem 1.5rem 3rem; }
+      .hero-visual { display: none; }
+      section { padding: 3.5rem 1.5rem; }
+      .claude-card { padding: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .header-nav .nav-badge { display: none; }
+      .header-nav .nav-badge--orange { display: flex; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-logo">🥘</span>
+      <span class="brand-name">PantryPal</span>
+      <span class="brand-tag">AI Chef</span>
+    </div>
+    <nav class="header-nav">
+      <span class="nav-badge nav-badge--orange">🤖 Claude AI</span>
+      <span class="nav-badge nav-badge--green">🩺 Health-Aware</span>
+      <span class="nav-badge nav-badge--purple">♻️ Zero Waste</span>
+    </nav>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-content fade">
+    <div class="section-label">✦ Hackathon 2025 · AI / LLM Track</div>
+    <h1 class="hero-title">
+      Cook Smart.<br />
+      <span class="gradient-text">Eat Healthy.</span>
+    </h1>
+    <p class="hero-sub">
+      Tell PantryPal what's in your kitchen and share your health goals.
+      Claude crafts the perfect recipes — tailored just for you.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><span>AI</span><p>Powered by Claude</p></div>
+      <div class="stat-divider"></div>
+      <div class="hero-stat"><span>0%</span><p>Food waste</p></div>
+      <div class="stat-divider"></div>
+      <div class="hero-stat"><span>∞</span><p>Personalisation</p></div>
+    </div>
+  </div>
+  <div class="hero-visual fade">
+    <div class="food-orbit">
+      <div class="orbit-ring"></div>
+      <div class="orbit-center">🥘</div>
+      <div class="orbit-item" style="--i:0;--total:8">🥕</div>
+      <div class="orbit-item" style="--i:1;--total:8">🥦</div>
+      <div class="orbit-item" style="--i:2;--total:8">🍳</div>
+      <div class="orbit-item" style="--i:3;--total:8">🧅</div>
+      <div class="orbit-item" style="--i:4;--total:8">🍅</div>
+      <div class="orbit-item" style="--i:5;--total:8">🌿</div>
+      <div class="orbit-item" style="--i:6;--total:8">🫙</div>
+      <div class="orbit-item" style="--i:7;--total:8">🥚</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ HOOK ══ -->
+<section>
+  <div class="fade">
+    <div class="section-label">✦ The moment we all know</div>
+    <h2>It's 7pm.<br /><span class="hl">You're staring at the fridge.</span></h2>
+    <p class="section-sub">The universal dinner dilemma — made worse when your health is in the picture.</p>
+  </div>
+  <div class="scene-card fade">
+    <p>You open the fridge and stare at: some chicken, half a bag of spinach, leftover rice, and a lemon. You have no idea what to make — and you're also supposed to be watching your sodium because your doctor said so. So you order pizza. Again.</p>
+    <div class="scene-card-attr">Every one of us, most nights</div>
+  </div>
+  <div class="glass-card fade" style="max-width:680px;">
+    <p style="font-size:1rem;color:var(--text-muted);line-height:1.8;">
+      This is the gap PantryPal fills. Not a recipe search engine. Not a meal kit.
+      <strong style="color:var(--text);">A personal AI chef that knows your ingredients and your health — and bridges them intelligently.</strong>
+    </p>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ PROBLEM ══ -->
+<section>
+  <div class="fade">
+    <div class="section-label">✦ The problem</div>
+    <h2>Bigger than a <span class="hl">dinner decision.</span></h2>
+    <p class="section-sub">Food waste and uninformed eating are silent, expensive, and largely unsolved for everyday people.</p>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card fade">
+      <div class="stat-big">30–40%</div>
+      <p>of food purchased in the US is wasted — often because people don't know what to cook with what they already have.</p>
+    </div>
+    <div class="stat-card fade">
+      <div class="stat-big">60%</div>
+      <p>of adults manage at least one chronic condition that requires daily dietary awareness and careful meal planning.</p>
+    </div>
+    <div class="stat-card fade">
+      <div class="stat-big">0</div>
+      <p>mainstream recipe apps combine your real pantry <em>and</em> your real health profile in a single, intelligent experience.</p>
+    </div>
+  </div>
+  <div class="glass-card fade" style="max-width:680px;margin-top:0.5rem;">
+    <p style="font-size:0.95rem;color:var(--text-muted);line-height:1.8;">
+      Generic recipe apps show you meals you don't have ingredients for. Search engines give you ten blue links. Neither knows <em>you</em> — your diabetes, your gluten intolerance, your high-protein goals. That's the gap we're closing.
+    </p>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ SOLUTION ══ -->
+<section>
+  <div class="fade">
+    <div class="section-label section-label--green">✦ The solution</div>
+    <h2>Meet <span class="hl">PantryPal.</span></h2>
+    <p class="section-sub">An AI-powered web app that generates personalized recipes from what you have and who you are — not a generic user.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card fade">
+      <div class="feature-icon-wrap fi--orange">🧺</div>
+      <h3>Pantry-first recipes</h3>
+      <p>Add the ingredients you have on hand. PantryPal builds meals around what's already in your kitchen — no extra grocery run needed.</p>
+    </div>
+    <div class="feature-card fade">
+      <div class="feature-icon-wrap fi--green">🩺</div>
+      <h3>Health-aware AI</h3>
+      <p>Tell us your chronic conditions, dietary restrictions, and lifestyle goals. Every recipe recommendation respects your full health profile.</p>
+    </div>
+    <div class="feature-card fade">
+      <div class="feature-icon-wrap fi--purple">💬</div>
+      <h3>Chef Chat</h3>
+      <p>Ask anything about your recipe — substitutions, scaling, technique tips, nutrition deep-dives. Claude answers in context.</p>
+    </div>
+    <div class="feature-card fade">
+      <div class="feature-icon-wrap fi--gold">📊</div>
+      <h3>Nutrition breakdown</h3>
+      <p>Calories, protein, carbs, fat, fiber — every recipe comes with a complete nutrition card that scales with your serving size.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ HOW IT WORKS ══ -->
+<section>
+  <div class="fade">
+    <div class="section-label">✦ How it works</div>
+    <h2>Three steps to <span class="hl">dinner.</span></h2>
+    <p class="section-sub">Designed to be instant and frictionless — open the app, get cooking.</p>
+  </div>
+  <div class="steps-flow">
+    <div class="step-row fade">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Add your ingredients</h3>
+        <p>Type what's in your fridge and pantry. Include quantities if you want — PantryPal works with whatever you have, however little.</p>
+      </div>
+    </div>
+    <div class="step-row fade">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Share your health profile</h3>
+        <p>Add chronic conditions (e.g. diabetes, hypertension), dietary restrictions (gluten-free, vegan), or lifestyle goals (high-protein, low-carb). One tap per filter.</p>
+      </div>
+    </div>
+    <div class="step-row fade">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Get personalized recipes — and chat with your chef</h3>
+        <p>Claude generates recipes tailored to your exact pantry and health. Open Chef Chat on any recipe to ask follow-up questions in real time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ WHY CLAUDE ══ -->
+<section>
+  <div class="fade">
+    <div class="section-label section-label--purple">✦ The engine</div>
+    <h2>Why <span style="color:var(--purple);">Claude?</span></h2>
+    <p class="section-sub">This task requires more than text generation. It requires reasoning — across ingredients, health constraints, and culinary creativity simultaneously.</p>
+  </div>
+  <div class="claude-card fade">
+    <div class="claude-powered">
+      <div class="claude-badge">POWERED BY ANTHROPIC CLAUDE</div>
+    </div>
+    <ul class="claude-points">
+      <li>
+        <div class="claude-bullet">✦</div>
+        <span><strong>Intersection reasoning.</strong> Claude understands which ingredients pair well <em>and</em> what's safe for someone with Type 2 diabetes and a gluten intolerance — simultaneously, without prompting for each separately.</span>
+      </li>
+      <li>
+        <div class="claude-bullet">✦</div>
+        <span><strong>Reliable structured output.</strong> Claude produces clean, valid JSON that renders directly into rich recipe cards — no post-processing hacks, no retries, no parsing gymnastics.</span>
+      </li>
+      <li>
+        <div class="claude-bullet">✦</div>
+        <span><strong>Contextual Chef Chat.</strong> Each chat session is grounded in the specific recipe — ingredients, instructions, health tags, tips. Claude gives expert, recipe-aware answers rather than generic cooking advice.</span>
+      </li>
+      <li>
+        <div class="claude-bullet">✦</div>
+        <span><strong>Safety-first generation.</strong> Claude is careful not to suggest ingredients that contradict stated health conditions — critical when users are managing real medical needs.</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ IMPACT ══ -->
+<section>
+  <div class="fade">
+    <div class="section-label section-label--green">✦ The bigger picture</div>
+    <h2>Beyond tonight's <span class="hl">dinner.</span></h2>
+    <p class="section-sub">PantryPal addresses real, compounding problems — food waste, chronic illness management, and the cognitive load of everyday cooking.</p>
+  </div>
+  <div class="impact-grid">
+    <div class="impact-card fade">
+      <div class="impact-icon">♻️</div>
+      <h3>Less food waste</h3>
+      <p>Use what you have instead of defaulting to takeout or throwing out forgotten ingredients at the back of the fridge.</p>
+    </div>
+    <div class="impact-card fade">
+      <div class="impact-icon">❤️</div>
+      <h3>Healthier habits</h3>
+      <p>Empowers people managing chronic conditions to cook confidently — without a nutritionist on call.</p>
+    </div>
+    <div class="impact-card fade">
+      <div class="impact-icon">💸</div>
+      <h3>Save money</h3>
+      <p>Fewer grocery runs, less waste, more meals from what's already in the kitchen. Every ingredient earns its place.</p>
+    </div>
+    <div class="impact-card fade">
+      <div class="impact-icon">🌍</div>
+      <h3>Scales with you</h3>
+      <p>Connect to grocery apps, wearables, doctor dietary plans. Today is just the beginning of a personalised food OS.</p>
+    </div>
+  </div>
+  <div class="tagline-block fade">
+    <div class="tagline-big">Eat smarter. Waste less. Live better.</div>
+    <p class="tagline-sub">PantryPal — where your pantry meets your health, powered by Claude.</p>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- ══ TECH STACK ══ -->
+<section style="padding-bottom: 4rem;">
+  <div class="fade">
+    <div class="section-label">✦ Built with</div>
+    <h2>The <span class="hl">tech.</span></h2>
+  </div>
+  <div class="pill-row fade">
+    <div class="pill pill--purple">🤖 Claude (Anthropic)</div>
+    <div class="pill pill--orange">⚡ FastAPI</div>
+    <div class="pill pill--green">⚛️ React + Vite</div>
+    <div class="pill">🐍 Python</div>
+    <div class="pill">📦 Pydantic</div>
+    <div class="pill">🎨 CSS Design System</div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <span>🥘 PantryPal</span>
+  <span>·</span>
+  <span>Powered by Claude (Anthropic)</span>
+  <span>·</span>
+  <span>Hackathon 2025</span>
+</footer>
+
+</div><!-- /.app -->
+
+<script>
+  const obs = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }),
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
