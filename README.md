@@ -143,7 +143,7 @@ Unused values are estimates based on pantry items and recipe ingredient usage, n
 pantrypal/
 ├── backend/
 │   ├── main.py              # FastAPI routes
-│   ├── bedrock.py           # Ollama recipe + vision integration
+│   ├── recommendation.py    # Ollama recipe + vision integration
 │   ├── models.py            # Pydantic schemas
 │   ├── requirements.txt
 │   └── tests/

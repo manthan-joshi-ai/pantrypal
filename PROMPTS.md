@@ -1,121 +1,134 @@
-# PantryPal — Build Session Prompts
+# PantryPal Prompt Documentation
 
-All prompts used in the session that built this application from scratch.
+This file captures the prompts used to build the PantryPal application from scratch.
 
----
+## Project Goal Prompts
 
-## 1. Initial idea & pivot
+### 1. Initial concept
 
-> "let's get started / hello"
+> "Let's build an AI-powered food recommendation app called PantryPal. It should let users enter pantry ingredients and health preferences, then return healthy recipes they can cook from what they have."
 
-> "let's start with building a normal TO-DO application: Tech stack - Java Spring Boot, Database - H2 in memory Database"
+### 2. Core app functionality
 
-> "We are participating in a hackathon on AI ideas, we plan to build a webapp for food/dish recommandations. Idea is to recommand a dish which we can prepare from the left over food items at home. Name of the agent assistent is PantryPal."
+> "PantryPal should support manual ingredient input, health profile filters, photo-based pantry analysis, recipe recommendations, saved recipes, shopping lists, cooking mode, and chef chat."
 
-> "not happy with results !! let remove these two backend and frontend first"
+### 3. Backend architecture
 
----
+> "Create a FastAPI backend with endpoints for recipe recommendations, image-based ingredient detection, and chef chat. Use Pydantic models for validation and keep the AI integration in a separate module."
 
-## 2. AWS Bedrock connection test
+### 4. AI integration
 
-> "let's start with a simple python code which checks the connection with aws bedrock and is able to connect the model and run how are you prompt!"
+> "Use Ollama for the LLM backend. The same model should handle both text recipe generation and the chef chat assistant, while a vision-capable model handles image ingredient analysis."
 
-> "let's use any llama model or minimax model for testing purpose"
+### 5. UX and UI design
 
----
+> "Design an eye-catching modern food app UI with a hero section, ingredient input panel, health profile panel, results cards, saved recipes tab, shopping list modal, and theme toggle."
 
-## 3. Build the full app
+## Feature Build Prompts
 
-> "Sure, let's build something eye catchy UI, name of the app - PantryPal. What we want? - it will take the list of ingridents from the user and will return a healthy reciepe out of it. It will also take user health conditions data and will suggest receipe based on it. I need you help to develop this app for me."
+### Recipe generation and health personalization
 
----
+> "Build the recipe prompt so it only outputs valid JSON and returns a list of healthy recipe objects. Each recipe should include name, cuisine, description, health benefits, prep/cook time, difficulty, servings, used ingredients, additional ingredients, instructions, nutrition, health tags, and tips."
 
-## 4. UI redesign
+> "Make the recipe engine respect health profile fields like chronic conditions, dietary restrictions, lifestyle, and notes."
 
-> "can we change the UI ?"
+### Image analysis prompt
 
-> "all together a new UI as per the current market trends for a food app"
+> "Add a picture upload flow that sends an image to the backend, detects visible food or pantry items, and returns structured ingredient objects with name, estimated quantity, unit, confidence, category, and notes."
 
----
+> "If the image analysis is wrong, allow users to correct the detected ingredients and regenerate recipes from the corrected list."
 
-## 5. Documentation
+### Chef chat prompt
 
-> "let's add a quick md file for this application ?"
+> "Create a chef chat assistant for each recipe. The chat should answer questions about substitutions, storage, scaling, nutrition, technique, and how to make the dish spicier."
 
----
+> "The chef chat response should be conversational and plain text only — no JSON or markdown formatting."
 
-## 6. Cleanup
+### Saved recipes and shopping list
 
-> "Remove hackathon branding from the code and md file!"
+> "Allow users to save recipes locally in the browser using localStorage. Add a Saved Recipes tab and let users toggle saved state with a heart icon."
 
-> "year is wrong it is taking 2025"
+> "Add a shopping list modal that collects additional ingredients across current recipes and provides a copy-to-clipboard option."
 
----
+### Cooking mode
 
-## 7. Dark / Light theme
+> "Build a cooking mode that shows recipe steps one at a time. Add a serving size adjuster so ingredient quantities and nutrition values scale based on servings."
 
-> "let's add dark/light theme"
+### Theme and UX polish
 
-> "it still doesn't change the theme - and this doesn't look good"
+> "Add a dark/light theme toggle and persist the choice in localStorage."
 
----
+> "Add helpful error states, loading indicators, and smooth transitions when searching for recipes, uploading images, or switching tabs."
 
-## 8. UX improvements brainstorm
+### Waste tracking
 
-> "what else can we add here to improve the user experience"
+> "Track completed and discarded recipes, ingredients saved, servings cooked, leftover estimates, and history events to show waste reduction stats."
 
----
+## Backend Prompt Details
 
-## 9. Git setup
+### Recipe recommendation prompt
 
-> "let's first add git - for source code handling?"
+- Use a professional nutritionist and chef persona.
+- Require valid JSON only, no markdown or extra explanation.
+- Provide the available ingredients list.
+- Provide the health profile details when supplied.
+- Define an exact response schema for recipes.
+- Ask for 1–5 healthy recipes per request.
 
----
+### Image analysis prompt
 
-## 10. Feature additions
+- Ask the model to identify visible food or pantry items.
+- Use raw ingredient names rather than dish names.
+- Estimate quantity only when visually reasonable.
+- Return only valid JSON, no markdown.
 
-> "let's add these:
-> 1. Save / favourite recipes — heart icon on each card, saved to localStorage, 'Saved Recipes' tab to revisit them.
-> 2. Shopping list — one click generates a list of the 'additional ingredients needed' across all recipes, with a copy-to-clipboard button.
-> 3. Serving size adjuster — +/- control on each recipe card that scales all ingredient quantities dynamically.
-> 4. Cooking mode — full-screen step-by-step view, one step at a time, with a 'Next Step' button and a progress bar — keeps screen awake during cooking"
+### Chef chat prompt
 
----
+- Provide recipe context including name, cuisine, servings, prep/cook time, ingredients, instructions, health tags, and tips.
+- Ask the model to answer cooking-related questions clearly and practically.
+- Prefer concise, plain-text responses.
 
-## 11. GitHub
+## App Development Timeline Prompts
 
-> "let's push the latest changes to github"
+### Start-to-finish prompts used during development
 
----
+1. "Let's create PantryPal, a kitchen recipe assistant that uses ingredient input and health data to recommend meals."
+2. "Build the backend first using FastAPI and a separate recommendation module to manage AI calls."
+3. "Write the frontend with ingredient entry, health profile, photo analysis, recipe cards, and a hero section."
+4. "Add a saved recipes feature with localStorage and a dedicated saved tab."
+5. "Add a shopping list modal and ensure users can copy the list quickly."
+6. "Add serving size controls on recipe cards and scale nutrition values accordingly."
+7. "Add cooking mode with on-screen step-by-step navigation."
+8. "Add a Chef Chat panel on each recipe card for recipe-specific help."
+9. "Add a dark/light theme toggle and persist it in localStorage."
+10. "Add waste tracking stats for completed recipes, ingredients saved, and discarded recipe events."
+11. "Document how to set up and run the app in setup and prompts docs."
 
-## 12. API key handling
+## Project Structure and Implementation Notes
 
-> "where the api key now? if I need to share it someone ?"
+- `backend/main.py` handles API routes and validation.
+- `backend/recommendation.py` contains AI prompt logic and Ollama integration.
+- `backend/models.py` defines Pydantic schemas for requests and responses.
+- `frontend/src/App.jsx` orchestrates state, ingredient input, health profile, search flow, results, saved recipes, and modals.
+- `frontend/src/components/RecipeCard.jsx` shows recipe details, serving controls, chef chat toggle, and cooking mode.
+- `frontend/src/components/ChefChat.tsx` manages chat interactions and quick prompts.
+- `frontend/src/components/ImageUploadPanel.jsx` handles image uploads, analysis results, and correction actions.
+- `frontend/src/services/api.js` communicates with backend endpoints.
 
----
+## Running and Testing Prompts
 
-## 13. Setup guide
+These prompts drove the build and should be used when updating the app:
+- "Update the recipe prompt to produce clean JSON output for recipes."
+- "Improve image analysis so it only returns sensible ingredient detections."
+- "Make chef chat recipe-specific and concise."
+- "Add a shopping list based on additional ingredients."
+- "Add the ability to save recipes in localStorage."
+- "Add a dark/light theme toggle and persist the selection."
+- "Add cooking mode and serving-size scaling."
+- "Add waste tracking statistics and history."
 
-> "let's add setup.md file to help other dev for setting up the project on local and run the setup"
+## Notes
 
----
-
-## 14. Session prompts
-
-> "can you collect all these prompts in a md file? for this session which we used to create this application"
-
-
-# Feature Prompts
-
-## Chef Chat Feature
-
-**Prompt:**
-> I want to add a feature here, where user can have a chef chat for every recipe.
-**Details discussed:**
-- AI backend: Same as recipes (AWS Bedrock / MiniMax)
-- UI placement: Slide-in panel on the recipe card
-
-**What was built:**
-- `POST /api/chat` backend endpoint
-- `ChefChat.jsx` slide-in panel with message history, typing indicator, and quick-suggestion chips
-- "Chat with Chef" toggle button on each recipe card
+- Use this file as the source of truth for the prompts that guided the project.
+- Keep prompt wording aligned with the actual UI and backend flow.
+- When extending features, add a new prompt section describing the user intent and expected outcome.

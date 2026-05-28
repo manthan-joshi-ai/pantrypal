@@ -104,7 +104,7 @@ The app will be available at **http://localhost:5173**
 pantrypal/
 ├── backend/
 │   ├── main.py          # FastAPI app + routes
-│   ├── bedrock.py       # MiniMax AI integration via AWS Bedrock
+│   ├── recommendation.py# Ollama recipe + vision integration
 │   ├── models.py        # Pydantic request/response models
 │   ├── requirements.txt
 │   └── .env             # ← create this locally (not in git)
