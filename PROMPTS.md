@@ -132,3 +132,17 @@ These prompts drove the build and should be used when updating the app:
 - Use this file as the source of truth for the prompts that guided the project.
 - Keep prompt wording aligned with the actual UI and backend flow.
 - When extending features, add a new prompt section describing the user intent and expected outcome.
+
+## Change Log
+
+### Prompt milestones
+- Initial concept: define PantryPal as an AI recipe assistant using pantry ingredients and health filters.
+- Backend: define FastAPI routes for recommendations, image analysis, and chef chat.
+- Recipe prompt: require clean JSON output with a full recipe schema.
+- Image prompt: return only visible ingredients with confidence and metadata.
+- Chef chat prompt: answer recipe questions in plain text.
+- UX prompts: add saved recipes, shopping list, cooking mode, theme toggle, and waste tracking.
+
+### When to update this file
+- Add a new prompt entry whenever a feature is added or changed.
+- Keep the prompt wording consistent with the actual UI and backend behavior.
