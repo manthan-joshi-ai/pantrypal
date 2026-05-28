@@ -21,10 +21,10 @@ PantryPal is a full-stack AI web app powered by local Ollama models. Users can t
 - Saved recipes and shopping-list helper.
 
 ## Dashboard
-<img width="1710" height="1107" alt="dashboard" src="https://github.com/user-attachments/assets/5ccb7e9d-234d-408c-9465-b473439e971f" />
+<img width="3420" height="2214" alt="image" src="https://github.com/user-attachments/assets/36b2116a-086d-4014-962a-c35a48487e36" />
 
 ## Health Preference
-<img width="1710" height="1107" alt="health-preference" src="https://github.com/user-attachments/assets/92bd7bd3-a7ef-4f10-b369-21c61bb1833c" />
+<img width="3420" height="2214" alt="image" src="https://github.com/user-attachments/assets/1ccd40bd-6ed2-4a97-a66c-7c16405c26a1" />
 
 ## Reciepe Generator
 <img width="1710" height="1107" alt="recipe-generation" src="https://github.com/user-attachments/assets/f9b6b3fb-fe12-4a8d-a91b-e855c766cfff" />
