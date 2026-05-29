@@ -524,6 +524,7 @@
 <nav class="nav-dots">
   <a class="nav-dot" href="#hero"     title="Intro"></a>
   <a class="nav-dot" href="#problem"  title="Problem"></a>
+  <a class="nav-dot" href="#vs"       title="Why not ChatGPT?"></a>
   <a class="nav-dot" href="#solution" title="Solution"></a>
   <a class="nav-dot" href="#benefits" title="Benefits"></a>
   <a class="nav-dot" href="#features" title="Features"></a>
@@ -544,12 +545,12 @@
         Pantry<span class="gradient-text">Pal</span>
       </h1>
       <p class="hero-sub">
-        Turn leftover ingredients into personalised, health-aware recipes — powered by MiniMax AI on AWS Bedrock.
+        Turn leftover ingredients into personalised, health-aware recipes — powered by Anthropic Claude AI.
       </p>
       <div class="hero-pills">
-        <span class="pill pill-orange">🧠 MiniMax AI</span>
-        <span class="pill pill-green">☁️ AWS Bedrock</span>
-        <span class="pill pill-purple">⚡ Built in 1 Day</span>
+        <span class="pill pill-orange">🧠 Claude claude-sonnet-4-6</span>
+        <span class="pill pill-green">⚡ Anthropic API</span>
+        <span class="pill pill-purple">🚀 Built in 1 Day</span>
       </div>
       <div class="hero-visual">
         <span class="hero-emoji">🥕</span>
@@ -614,7 +615,68 @@
 </section>
 
 <!-- ══════════════════════════════════
-     3. SOLUTION
+     3. WHY NOT CHATGPT?
+══════════════════════════════════ -->
+<section id="vs">
+  <div class="container">
+    <div class="section-label">Why Not Just Ask ChatGPT?</div>
+    <h2 class="problem-headline" style="margin-bottom:0.75rem;">
+      ChatGPT is a conversation.<br /><span>PantryPal is a kitchen tool.</span>
+    </h2>
+    <p class="problem-desc" style="max-width:620px; margin-bottom:2rem;">
+      Yes — you can paste your ingredients into ChatGPT. Here's what that actually looks like versus a purpose-built experience.
+    </p>
+
+    <div class="vs-experience">
+      <div class="vs-exp-col vs-exp-col--chat">
+        <div class="vs-exp-header">🤖 Using ChatGPT / Gemini</div>
+        <div class="chat-bubble chat-bubble--user">
+          "Give me a recipe with chicken, spinach, onion. I have type 2 diabetes, I'm lactose intolerant, and I prefer high protein meals. Make it low glycaemic, avoid refined carbs, give me nutrition info, a shopping list for what I'm missing, and step-by-step instructions."
+        </div>
+        <div class="chat-bubble chat-bubble--ai">Here's a recipe… <span style="color:rgba(255,255,255,0.3)">[wall of unstructured text]</span></div>
+        <div class="chat-bubble chat-bubble--user">"Now give me the nutrition breakdown per serving"</div>
+        <div class="chat-bubble chat-bubble--ai">Sure, here are the approximate values…</div>
+        <div class="chat-bubble chat-bubble--user">"Now make it for 4 people instead of 2"</div>
+        <div class="chat-bubble chat-bubble--ai">Adjusted recipe…</div>
+        <div class="chat-meta">⏱ 5–8 min of back and forth. Tomorrow? Start over.</div>
+      </div>
+
+      <div class="vs-exp-divider">VS</div>
+
+      <div class="vs-exp-col vs-exp-col--pantry">
+        <div class="vs-exp-header">🥘 Using PantryPal</div>
+        <div class="pantry-step">
+          <span class="ps-num">1</span>
+          <span class="ps-text">Add ingredients with quick-tap chips — <strong>20 seconds</strong></span>
+        </div>
+        <div class="pantry-step">
+          <span class="ps-num">2</span>
+          <span class="ps-text">Tick your conditions once — <strong>saved forever</strong></span>
+        </div>
+        <div class="pantry-step">
+          <span class="ps-num">3</span>
+          <span class="ps-text">Click <em>Find My Recipes</em> — <strong>done in &lt;10s</strong></span>
+        </div>
+        <div class="pantry-result">
+          <div class="pr-item">✓ Up to 5 structured recipe cards</div>
+          <div class="pr-item">✓ Nutrition per serving — auto-scaled</div>
+          <div class="pr-item">✓ Shopping list in one click</div>
+          <div class="pr-item">✓ Step-by-step cooking mode</div>
+          <div class="pr-item">✓ Chef Chat per recipe</div>
+          <div class="pr-item">✓ Saved for next time</div>
+        </div>
+        <div class="chat-meta" style="color:var(--green);">⏱ Under 60 seconds. Every time. No re-typing.</div>
+      </div>
+    </div>
+
+    <p class="vs-footer" style="margin-top:1.5rem;">
+      The difference is like using Excel to track your finances vs building a banking app — same data, completely different experience.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     4. SOLUTION
 ══════════════════════════════════ -->
 <section id="solution">
   <div class="container">
@@ -644,7 +706,7 @@
       <div class="hiw-arrow">→</div>
       <div class="hiw-step">
         <span class="hiw-emoji">🍽️</span>
-        <div class="hiw-title">Get 3 recipes. Cook.</div>
+        <div class="hiw-title">Get up to 5 recipes. Cook.</div>
         <div class="hiw-desc">Personalised, nutritionally balanced — tailored to your pantry and health</div>
       </div>
     </div>
@@ -656,7 +718,7 @@
       </div>
       <div class="result-divider"></div>
       <div class="result-stat">
-        <span class="result-num">3</span>
+        <span class="result-num">1–5</span>
         <div class="result-label">personalised recipes</div>
       </div>
       <div class="result-divider"></div>
@@ -672,10 +734,11 @@
     </div>
 
     <div class="solution-stack">
-      <span class="tech-pill">🧠 MiniMax M2 on AWS Bedrock</span>
+      <span class="tech-pill">🧠 Claude claude-sonnet-4-6</span>
+      <span class="tech-pill">⚡ Anthropic API</span>
       <span class="tech-pill">⚛️ React 18</span>
       <span class="tech-pill">🐍 Python FastAPI</span>
-      <span class="tech-pill">☁️ AWS us-east-1</span>
+      <span class="tech-pill">🖼️ Pillow</span>
     </div>
   </div>
 </section>
@@ -700,7 +763,7 @@
         <span class="benefit-icon">⏱️</span>
         <div class="benefit-num benefit-num--green">&lt;10s</div>
         <div class="benefit-label">Recipe generation</div>
-        <div class="benefit-desc">From ingredients to 3 complete personalised recipes — timed in our own testing</div>
+        <div class="benefit-desc">From ingredients to up to 5 complete personalised recipes — timed in our own testing</div>
       </div>
       <div class="benefit-card benefit-card--green">
         <span class="benefit-icon">🩺</span>
@@ -743,59 +806,6 @@
       </div>
     </div>
 
-    <!-- Why not ChatGPT -->
-    <div class="vs-block">
-      <div class="vs-title">💬 "Can't I just type my ingredients into ChatGPT?"</div>
-      <p class="vs-intro">
-        Yes — you absolutely can. Here's what that actually looks like versus PantryPal.
-      </p>
-
-      <!-- Side by side experience -->
-      <div class="vs-experience">
-        <div class="vs-exp-col vs-exp-col--chat">
-          <div class="vs-exp-header">🤖 Using ChatGPT / Gemini</div>
-          <div class="chat-bubble chat-bubble--user">
-            "Give me a recipe with chicken, spinach, onion. I have type 2 diabetes, I'm lactose intolerant, and I prefer high protein meals. Make it low glycaemic, avoid refined carbs, give me nutrition info, a shopping list for what I'm missing, and step-by-step instructions."
-          </div>
-          <div class="chat-bubble chat-bubble--ai">Here's a recipe… <span style="color:rgba(255,255,255,0.3)">[wall of unstructured text]</span></div>
-          <div class="chat-bubble chat-bubble--user">"Now give me the nutrition breakdown per serving"</div>
-          <div class="chat-bubble chat-bubble--ai">Sure, here are the approximate values…</div>
-          <div class="chat-bubble chat-bubble--user">"Now make it for 4 people instead of 2"</div>
-          <div class="chat-bubble chat-bubble--ai">Adjusted recipe…</div>
-          <div class="chat-meta">⏱ 5–8 min of back and forth. Tomorrow? Start over.</div>
-        </div>
-
-        <div class="vs-exp-divider">VS</div>
-
-        <div class="vs-exp-col vs-exp-col--pantry">
-          <div class="vs-exp-header">🥘 Using PantryPal</div>
-          <div class="pantry-step">
-            <span class="ps-num">1</span>
-            <span class="ps-text">Add ingredients with quick-tap chips — <strong>20 seconds</strong></span>
-          </div>
-          <div class="pantry-step">
-            <span class="ps-num">2</span>
-            <span class="ps-text">Tick your conditions once — <strong>saved forever</strong></span>
-          </div>
-          <div class="pantry-step">
-            <span class="ps-num">3</span>
-            <span class="ps-text">Click <em>Find My Recipes</em> — <strong>done in &lt;10s</strong></span>
-          </div>
-          <div class="pantry-result">
-            <div class="pr-item">✓ 3 structured recipe cards</div>
-            <div class="pr-item">✓ Nutrition per serving — auto-scaled</div>
-            <div class="pr-item">✓ Shopping list in one click</div>
-            <div class="pr-item">✓ Step-by-step cooking mode</div>
-            <div class="pr-item">✓ Saved for next time</div>
-          </div>
-          <div class="chat-meta" style="color:var(--green);">⏱ Under 60 seconds. Every time. No re-typing.</div>
-        </div>
-      </div>
-
-      <p class="vs-footer">
-        ChatGPT is a <strong>conversation</strong>. PantryPal is a <strong>kitchen tool</strong>. The difference is like using Excel to track your finances vs building a banking app — same data, completely different experience.
-      </p>
-    </div>
   </div>
 </section>
 
@@ -806,7 +816,7 @@
   <div class="container">
     <div class="section-label">Key Features</div>
     <h2 class="features-title">Everything you need, nothing you don't</h2>
-    <p class="features-sub">Built in a single day — six features that make a real difference.</p>
+    <p class="features-sub">Built in a single day — nine features that make a real difference.</p>
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">🧺</span>
@@ -814,9 +824,19 @@
         <div class="feature-desc">Quick-add chips + free text. Add ingredients in seconds with common shortcuts.</div>
       </div>
       <div class="feature-card">
+        <span class="feature-icon">📸</span>
+        <div class="feature-name">Food Photo Upload</div>
+        <div class="feature-desc">Snap your fridge or pantry — Claude Vision detects ingredients automatically. Review and edit before generating.</div>
+      </div>
+      <div class="feature-card">
         <span class="feature-icon">🩺</span>
         <div class="feature-name">Health Profile</div>
         <div class="feature-desc">Chronic conditions, dietary restrictions, lifestyle goals — all influence the AI output.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <div class="feature-name">Chef Chat</div>
+        <div class="feature-desc">Ask the AI chef anything about a recipe — substitutions, spice levels, techniques, scaling tips.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">❤️</span>
@@ -837,6 +857,11 @@
         <span class="feature-icon">👨‍🍳</span>
         <div class="feature-name">Cooking Mode</div>
         <div class="feature-desc">Full-screen step-by-step view. Progress bar, keyboard nav, screen stays on.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔢</span>
+        <div class="feature-name">Dynamic Recipe Count</div>
+        <div class="feature-desc">Choose 1 to 5 recipes per request. Pick quick inspiration or a full meal plan.</div>
       </div>
     </div>
     <div class="demo-banner">
@@ -905,7 +930,7 @@
         <div class="learning-num learning-num--orange">💸</div>
         <div class="learning-text">
           <strong>Cost is a real overhead</strong>
-          <span>Every API call to AWS Bedrock has a price. For a free consumer tool, this model needs careful thought — free tier or subscription pricing would be needed at scale.</span>
+          <span>Every API call to Claude has a price. For a free consumer tool, this needs careful thought — free tier or subscription pricing would be needed at scale.</span>
         </div>
       </div>
       <div class="learning-item learning-item--orange">
@@ -942,25 +967,31 @@
     <h2 class="team-title">Built by humans, powered by AI</h2>
     <p class="team-sub">Every member contributed ideas, code, and creativity under the clock.</p>
     <div class="team-grid">
+
       <div class="team-card">
-        <div class="team-avatar">👨‍💻</div>
-        <div class="team-name">Team Member 1</div>
-        <div class="team-role">Full Stack / AI</div>
+        <div class="team-avatar">👨‍💼</div>
+        <div class="team-name">Siddharth Agnihotri</div>
+        <div class="team-role">Non-Technical Member</div>
       </div>
       <div class="team-card">
         <div class="team-avatar">👩‍💻</div>
-        <div class="team-name">Team Member 2</div>
-        <div class="team-role">Frontend / UX</div>
+        <div class="team-name">Disha Arora</div>
+        <div class="team-role">Technical Member</div>
       </div>
       <div class="team-card">
-        <div class="team-avatar">🧑‍💻</div>
-        <div class="team-name">Team Member 3</div>
-        <div class="team-role">Backend / Infra</div>
+        <div class="team-avatar">👩‍💻</div>
+        <div class="team-name">Agrima Dabral</div>
+        <div class="team-role">Technical Member</div>
       </div>
       <div class="team-card">
-        <div class="team-avatar">👨‍🎨</div>
-        <div class="team-name">Team Member 4</div>
-        <div class="team-role">Design / Demo</div>
+        <div class="team-avatar">👨‍💻</div>
+        <div class="team-name">Manthan Joshi</div>
+        <div class="team-role">Technical Member</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">🤖</div>
+        <div class="team-name">Claude AI</div>
+        <div class="team-role">AI Partner</div>
       </div>
     </div>
   </div>
@@ -994,6 +1025,14 @@
         <span class="prompt-quote">"</span>
         <div class="prompt-text">All together a new UI as per the current market trends for a food app — with dark/light theme toggle.</div>
       </div>
+      <div class="prompt-item">
+        <span class="prompt-quote">"</span>
+        <div class="prompt-text">Let's migrate from AWS Bedrock / MiniMax to Anthropic Claude API — use claude-sonnet-4-6 as the model.</div>
+      </div>
+      <div class="prompt-item">
+        <span class="prompt-quote">"</span>
+        <div class="prompt-text">I want to add a feature where user can have a chef chat for every recipe. Also add food photo upload — user should be able to upload a fridge or pantry photo and the AI should detect the ingredients with an editable review step.</div>
+      </div>
     </div>
   </div>
 </section>
@@ -1013,8 +1052,8 @@
       PantryPal is not just a hackathon project — it's a solution real households need today.
     </p>
     <div class="close-stack">
-      <span class="close-tag">🧠 MiniMax M2</span>
-      <span class="close-tag">☁️ AWS Bedrock</span>
+      <span class="close-tag">🧠 Claude claude-sonnet-4-6</span>
+      <span class="close-tag">⚡ Anthropic API</span>
       <span class="close-tag">⚛️ React 18</span>
       <span class="close-tag">🐍 Python FastAPI</span>
       <span class="close-tag">🌐 github.com/manthan-joshi-ai/pantrypal</span>
