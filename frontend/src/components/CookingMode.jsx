@@ -1,32 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const fetchDishImage = async (recipe) => {
-  const base = 'https://www.themealdb.com/api/json/v1/1';
+const BASE = 'https://www.themealdb.com/api/json/v1/1';
 
-  // Strategy 1: recipe name — try progressively shorter queries
+const randomMealImage = async () => {
+  const r = await fetch(`${BASE}/random.php`);
+  const d = await r.json();
+  return d.meals?.[0]?.strMealThumb || null;
+};
+
+const bestMatchImage = async (recipe) => {
+  // By recipe name keywords
   const words = recipe.name.split(' ');
   for (let i = words.length; i >= 1; i--) {
     try {
-      const r = await fetch(`${base}/search.php?s=${encodeURIComponent(words.slice(0, i).join(' '))}`);
+      const r = await fetch(`${BASE}/search.php?s=${encodeURIComponent(words.slice(0, i).join(' '))}`);
       const d = await r.json();
       if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
     } catch { /* continue */ }
   }
-
-  // Strategy 2: search by each pantry ingredient used
+  // By first ingredient
   for (const ing of (recipe.ingredients_used || [])) {
-    const keyword = ing.split(' ').slice(-1)[0]; // last word e.g. "chicken" from "diced chicken"
+    const keyword = ing.split(' ').slice(-1)[0];
     try {
-      const r = await fetch(`${base}/filter.php?i=${encodeURIComponent(keyword)}`);
+      const r = await fetch(`${BASE}/filter.php?i=${encodeURIComponent(keyword)}`);
       const d = await r.json();
       if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
     } catch { /* continue */ }
   }
-
-  // Strategy 3: search by cuisine/area
+  // By cuisine
   if (recipe.cuisine) {
     try {
-      const r = await fetch(`${base}/filter.php?a=${encodeURIComponent(recipe.cuisine.split(' ')[0])}`);
+      const r = await fetch(`${BASE}/filter.php?a=${encodeURIComponent(recipe.cuisine.split(' ')[0])}`);
       const d = await r.json();
       if (d.meals?.length) {
         const pick = d.meals[Math.floor(Math.random() * Math.min(5, d.meals.length))];
@@ -34,14 +38,6 @@ const fetchDishImage = async (recipe) => {
       }
     } catch { /* continue */ }
   }
-
-  // Strategy 4: random meal as last resort
-  try {
-    const r = await fetch(`${base}/random.php`);
-    const d = await r.json();
-    if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
-  } catch { /* nothing */ }
-
   return null;
 };
 
@@ -78,9 +74,11 @@ export default function CookingMode({ recipe, servings, onClose }) {
   const isDone = total > 0 && step === total - 1;
 
   useEffect(() => {
-    if (isDone && !dishImage) {
-      fetchDishImage(recipe).then(url => { if (url) setDishImage(url); });
-    }
+    if (!isDone) return;
+    // Load a random image immediately so something always shows
+    randomMealImage().then(url => { if (url) setDishImage(url); });
+    // Then try to find a better match and replace
+    bestMatchImage(recipe).then(url => { if (url) setDishImage(url); });
   }, [isDone]);
 
   return (
@@ -122,17 +120,14 @@ export default function CookingMode({ recipe, servings, onClose }) {
           <div className="cm-done">
             <div className="cm-done-icon">🎉</div>
             <h3>You're done! Enjoy your meal.</h3>
-            {dishImage && (
-              <div className="cm-final-image-wrap">
-                <img
-                  className="cm-final-image"
-                  src={dishImage}
-                  alt={recipe.name}
-                  onError={e => { e.target.closest('.cm-final-image-wrap').style.display = 'none'; }}
-                />
-                <p className="cm-final-image-label">🍽 {recipe.name}</p>
-              </div>
-            )}
+            <div className="cm-final-image-wrap">
+              {dishImage
+                ? <img className="cm-final-image" src={dishImage} alt={recipe.name}
+                    onError={e => { e.target.src = ''; e.target.style.display='none'; }} />
+                : <div className="cm-final-image-placeholder">🍽</div>
+              }
+              <p className="cm-final-image-label">🍽 {recipe.name}</p>
+            </div>
             <button className="cm-finish-btn" onClick={onClose}>
               Back to Recipe
             </button>
