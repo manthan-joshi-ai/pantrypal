@@ -1,6 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CookingMode from './CookingMode';
 import ChefChat from './ChefChat';
+
+const BASE = 'https://www.themealdb.com/api/json/v1/1';
+
+const fetchMealImage = async (recipe) => {
+  // By recipe name keywords
+  const words = recipe.name.split(' ');
+  for (let i = words.length; i >= 1; i--) {
+    try {
+      const r = await fetch(`${BASE}/search.php?s=${encodeURIComponent(words.slice(0, i).join(' '))}`);
+      const d = await r.json();
+      if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
+    } catch { /* continue */ }
+  }
+  // By first ingredient
+  for (const ing of (recipe.ingredients_used || [])) {
+    try {
+      const r = await fetch(`${BASE}/filter.php?i=${encodeURIComponent(ing.split(' ').slice(-1)[0])}`);
+      const d = await r.json();
+      if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
+    } catch { /* continue */ }
+  }
+  // By cuisine
+  if (recipe.cuisine) {
+    try {
+      const r = await fetch(`${BASE}/filter.php?a=${encodeURIComponent(recipe.cuisine.split(' ')[0])}`);
+      const d = await r.json();
+      if (d.meals?.length) return d.meals[Math.floor(Math.random() * Math.min(5, d.meals.length))].strMealThumb;
+    } catch { /* continue */ }
+  }
+  // Random fallback — always returns something
+  try {
+    const r = await fetch(`${BASE}/random.php`);
+    const d = await r.json();
+    return d.meals?.[0]?.strMealThumb || null;
+  } catch { return null; }
+};
 
 const CARD_GRADIENTS = [
   'linear-gradient(135deg, #ff6b35, #f7c59f)',
@@ -24,6 +60,11 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   const [servings, setServings] = useState(recipe.servings || 2);
   const [cooking, setCooking] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [mealImage, setMealImage] = useState(null);
+
+  useEffect(() => {
+    fetchMealImage(recipe).then(url => { if (url) setMealImage(url); });
+  }, []);
   const grad = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
   const diff = DIFF_STYLE[recipe.difficulty] || DIFF_STYLE.Easy;
   const baseSrv = recipe.servings || 2;
@@ -39,8 +80,17 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   return (
     <>
       <div className="rcard">
+        {/* Dish image */}
+        {mealImage && (
+          <div className="rcard-image-wrap">
+            <img className="rcard-image" src={mealImage} alt={recipe.name}
+              onError={e => { e.target.closest('.rcard-image-wrap').style.display = 'none'; }} />
+            <div className="rcard-image-overlay" style={{ background: grad }} />
+          </div>
+        )}
+
         {/* Card top banner */}
-        <div className="rcard-banner" style={{ background: grad }} onClick={() => setOpen(!open)}>
+        <div className="rcard-banner" style={{ background: mealImage ? 'transparent' : grad, borderTop: mealImage ? 'none' : undefined }} onClick={() => setOpen(!open)}>
           <div className="rcard-banner-left">
             <span className="rcard-index">0{index + 1}</span>
             <div>
