@@ -39,7 +39,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
-  const [recipeCount, setRecipeCount] = useState(3);
+  const [recipeCount, setRecipeCount] = useState(5);
   const [customRecipeInput, setCustomRecipeInput] = useState('');
   const [recipeCountError, setRecipeCountError] = useState('');
   const [dishName, setDishName] = useState('');
@@ -189,7 +189,7 @@ export default function App() {
             <div className="recipe-count-row">
               <span className="recipe-label">📊 Recipes</span>
               <div className="recipe-preset-btns">
-                {[1, 2, 3].map(num => (
+                {[1, 2, 3, 4, 5].map(num => (
                   <button
                     key={num}
                     className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
@@ -259,7 +259,7 @@ export default function App() {
             <div className="recipe-count-row">
               <span className="recipe-label">📊 Recipes</span>
               <div className="recipe-preset-btns">
-                {[1, 2, 3].map(num => (
+                {[1, 2, 3, 4, 5].map(num => (
                   <button
                     key={num}
                     className={`recipe-btn ${recipeCount === num ? 'recipe-btn--active' : ''}`}
