@@ -1350,6 +1350,21 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
 }
 .cm-done-icon { font-size: 4rem; margin-bottom: 1rem; }
 .cm-done h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: 1.25rem; }
+.cm-final-image-wrap {
+  width: 100%; max-width: 420px; margin: 0 auto 1.5rem;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.cm-final-image {
+  width: 100%; height: 240px; object-fit: cover; display: block;
+  animation: fadeInUp 0.6s ease;
+}
+.cm-final-image-label {
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+  color: #fff; font-size: 0.85rem; font-weight: 700;
+  padding: 0.5rem 1rem; text-align: center;
+}
 .cm-finish-btn {
   padding: 0.75rem 2rem; border-radius: var(--radius-sm);
   background: var(--green); border: none; color: #fff;

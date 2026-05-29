@@ -70,6 +70,15 @@ export default function CookingMode({ recipe, servings, onClose }) {
           <div className="cm-done">
             <div className="cm-done-icon">🎉</div>
             <h3>You're done! Enjoy your meal.</h3>
+            <div className="cm-final-image-wrap">
+              <img
+                className="cm-final-image"
+                src={`https://source.unsplash.com/600x400/?${encodeURIComponent(recipe.name + ' food dish')}`}
+                alt={recipe.name}
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+              <p className="cm-final-image-label">🍽 {recipe.name}</p>
+            </div>
             <button className="cm-finish-btn" onClick={onClose}>
               Back to Recipe
             </button>
@@ -105,7 +114,7 @@ export default function CookingMode({ recipe, servings, onClose }) {
         </div>
       )}
 
-      <p className="cm-hint">Use ← → arrow keys to navigate. Exiting before Mark Done records this recipe as discarded.</p>
+      <p className="cm-hint">Use ← → arrow keys to navigate</p>
     </div>
   );
 }
