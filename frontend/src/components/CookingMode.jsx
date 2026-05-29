@@ -1,19 +1,47 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const fetchDishImage = async (recipeName) => {
-  // Try exact recipe name first, then first keyword
-  const queries = [
-    recipeName,
-    recipeName.split(' ')[0],
-    recipeName.split(' ').slice(0, 2).join(' '),
-  ];
-  for (const q of queries) {
+const fetchDishImage = async (recipe) => {
+  const base = 'https://www.themealdb.com/api/json/v1/1';
+
+  // Strategy 1: recipe name — try progressively shorter queries
+  const words = recipe.name.split(' ');
+  for (let i = words.length; i >= 1; i--) {
     try {
-      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      if (data.meals?.[0]?.strMealThumb) return data.meals[0].strMealThumb;
+      const r = await fetch(`${base}/search.php?s=${encodeURIComponent(words.slice(0, i).join(' '))}`);
+      const d = await r.json();
+      if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
     } catch { /* continue */ }
   }
+
+  // Strategy 2: search by each pantry ingredient used
+  for (const ing of (recipe.ingredients_used || [])) {
+    const keyword = ing.split(' ').slice(-1)[0]; // last word e.g. "chicken" from "diced chicken"
+    try {
+      const r = await fetch(`${base}/filter.php?i=${encodeURIComponent(keyword)}`);
+      const d = await r.json();
+      if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
+    } catch { /* continue */ }
+  }
+
+  // Strategy 3: search by cuisine/area
+  if (recipe.cuisine) {
+    try {
+      const r = await fetch(`${base}/filter.php?a=${encodeURIComponent(recipe.cuisine.split(' ')[0])}`);
+      const d = await r.json();
+      if (d.meals?.length) {
+        const pick = d.meals[Math.floor(Math.random() * Math.min(5, d.meals.length))];
+        if (pick.strMealThumb) return pick.strMealThumb;
+      }
+    } catch { /* continue */ }
+  }
+
+  // Strategy 4: random meal as last resort
+  try {
+    const r = await fetch(`${base}/random.php`);
+    const d = await r.json();
+    if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
+  } catch { /* nothing */ }
+
   return null;
 };
 
@@ -51,7 +79,7 @@ export default function CookingMode({ recipe, servings, onClose }) {
 
   useEffect(() => {
     if (isDone && !dishImage) {
-      fetchDishImage(recipe.name).then(url => { if (url) setDishImage(url); });
+      fetchDishImage(recipe).then(url => { if (url) setDishImage(url); });
     }
   }, [isDone]);
 
