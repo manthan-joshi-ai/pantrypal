@@ -1,7 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 
+const fetchDishImage = async (recipeName) => {
+  // Try exact recipe name first, then first keyword
+  const queries = [
+    recipeName,
+    recipeName.split(' ')[0],
+    recipeName.split(' ').slice(0, 2).join(' '),
+  ];
+  for (const q of queries) {
+    try {
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (data.meals?.[0]?.strMealThumb) return data.meals[0].strMealThumb;
+    } catch { /* continue */ }
+  }
+  return null;
+};
+
 export default function CookingMode({ recipe, servings, onClose }) {
   const [step, setStep] = useState(0);
+  const [dishImage, setDishImage] = useState(null);
   const steps = recipe.instructions || [];
   const total = steps.length;
   const progress = total > 0 ? Math.round(((step + 1) / total) * 100) : 0;
@@ -30,6 +48,12 @@ export default function CookingMode({ recipe, servings, onClose }) {
   }, [handleKey]);
 
   const isDone = total > 0 && step === total - 1;
+
+  useEffect(() => {
+    if (isDone && !dishImage) {
+      fetchDishImage(recipe.name).then(url => { if (url) setDishImage(url); });
+    }
+  }, [isDone]);
 
   return (
     <div className="cooking-overlay">
@@ -70,15 +94,17 @@ export default function CookingMode({ recipe, servings, onClose }) {
           <div className="cm-done">
             <div className="cm-done-icon">🎉</div>
             <h3>You're done! Enjoy your meal.</h3>
-            <div className="cm-final-image-wrap">
-              <img
-                className="cm-final-image"
-                src={`https://source.unsplash.com/600x400/?${encodeURIComponent(recipe.name + ' food dish')}`}
-                alt={recipe.name}
-                onError={e => { e.target.style.display = 'none'; }}
-              />
-              <p className="cm-final-image-label">🍽 {recipe.name}</p>
-            </div>
+            {dishImage && (
+              <div className="cm-final-image-wrap">
+                <img
+                  className="cm-final-image"
+                  src={dishImage}
+                  alt={recipe.name}
+                  onError={e => { e.target.closest('.cm-final-image-wrap').style.display = 'none'; }}
+                />
+                <p className="cm-final-image-label">🍽 {recipe.name}</p>
+              </div>
+            )}
             <button className="cm-finish-btn" onClick={onClose}>
               Back to Recipe
             </button>
