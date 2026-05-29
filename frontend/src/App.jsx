@@ -5,31 +5,14 @@ import ImageUploadPanel from './components/ImageUploadPanel';
 import HealthPanel from './components/HealthPanel';
 import RecipeCard from './components/RecipeCard';
 import ShoppingList from './components/ShoppingList';
-import FoodRecipeTracker from './components/FoodRecipeTracker';
 import { getImageRecommendations, getRecommendations } from './services/api';
 import './App.css';
 
 const DEFAULT_HEALTH = { chronic: [], dietary: [], lifestyle: [], notes: '' };
-const DEFAULT_WASTE = {
-  completedRecipes: 0,
-  ingredientsSaved: 0,
-  servingsCooked: 0,
-  discardedRecipes: 0,
-  lastRecipe: '',
-  lastWasteRecipe: '',
-  possibleWasteItems: 0,
-  leftoverItems: 0,
-  history: [],
-};
 
 const loadSaved = () => {
   try { return JSON.parse(localStorage.getItem('pp-saved') || '[]'); }
   catch { return []; }
-};
-
-const loadWaste = () => {
-  try { return { ...DEFAULT_WASTE, ...JSON.parse(localStorage.getItem('pp-waste') || '{}') }; }
-  catch { return DEFAULT_WASTE; }
 };
 
 const analysisToIngredients = (items) => (
@@ -50,14 +33,12 @@ export default function App() {
   const [recipes, setRecipes] = useState([]);
   const [imageAnalysis, setImageAnalysis] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState(loadSaved);
-  const [wasteStats, setWasteStats] = useState(loadWaste);
   const [loading, setLoading] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('ingredients');
   const [resultsView, setResultsView] = useState('results'); // 'results' | 'saved'
   const [showShoppingList, setShowShoppingList] = useState(false);
-  const [showRecipeTrackerModal, setShowRecipeTrackerModal] = useState(false);
   const [recipeCount, setRecipeCount] = useState(3);
   const [customRecipeInput, setCustomRecipeInput] = useState('');
   const [recipeCountError, setRecipeCountError] = useState('');
@@ -85,78 +66,6 @@ export default function App() {
   };
 
   const isSaved = (recipe) => savedRecipes.some(r => r.name === recipe.name);
-
-  const getRecipeWasteScope = (recipe) => {
-    const pantryItems = recipe.ingredients_used?.length || 0;
-    const possibleWasteItems = Math.max(
-      ingredients.length,
-      pantryItems + (recipe.additional_ingredients?.length || 0),
-      pantryItems,
-    );
-    return { pantryItems, possibleWasteItems };
-  };
-
-  const updateWasteStats = (recipe, servings) => {
-    const { pantryItems, possibleWasteItems } = getRecipeWasteScope(recipe);
-    const leftoverItems = Math.max(0, possibleWasteItems - pantryItems);
-    const event = {
-      id: `${Date.now()}-${recipe.name}`,
-      date: new Date().toISOString(),
-      status: 'completed',
-      recipeName: recipe.name,
-      ingredientsUsed: pantryItems,
-      possibleWasteItems,
-      leftoverItems,
-      servings,
-    };
-
-    setWasteStats(prev => {
-      const updated = {
-        ...prev,
-        completedRecipes: prev.completedRecipes + 1,
-        ingredientsSaved: prev.ingredientsSaved + pantryItems,
-        servingsCooked: prev.servingsCooked + servings,
-        lastRecipe: recipe.name,
-        possibleWasteItems: (prev.possibleWasteItems || 0) + possibleWasteItems,
-        leftoverItems: (prev.leftoverItems || 0) + leftoverItems,
-        history: [...(prev.history || []), event],
-      };
-      localStorage.setItem('pp-waste', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const recordRecipeWaste = (recipe) => {
-    const { possibleWasteItems } = getRecipeWasteScope(recipe);
-    const event = {
-      id: `${Date.now()}-${recipe.name}-discarded`,
-      date: new Date().toISOString(),
-      status: 'discarded',
-      recipeName: recipe.name,
-      ingredientsUsed: 0,
-      possibleWasteItems,
-      leftoverItems: possibleWasteItems,
-      servings: 0,
-    };
-
-    setWasteStats(prev => {
-      const updated = {
-        ...prev,
-        discardedRecipes: (prev.discardedRecipes || 0) + 1,
-        lastWasteRecipe: recipe.name,
-        possibleWasteItems: (prev.possibleWasteItems || 0) + possibleWasteItems,
-        leftoverItems: (prev.leftoverItems || 0) + possibleWasteItems,
-        history: [...(prev.history || []), event],
-      };
-      localStorage.setItem('pp-waste', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const resetWasteStats = () => {
-    localStorage.removeItem('pp-waste');
-    setWasteStats(DEFAULT_WASTE);
-  };
 
   const handleFind = async () => {
     if (ingredients.length === 0) {
@@ -231,9 +140,6 @@ export default function App() {
 
   const totalHealth = health.chronic.length + health.dietary.length + health.lifestyle.length;
   const displayedRecipes = resultsView === 'saved' ? savedRecipes : recipes;
-  const heroWastePct = wasteStats.possibleWasteItems
-    ? Math.round(((wasteStats.leftoverItems || 0) / wasteStats.possibleWasteItems) * 100)
-    : 0;
 
   return (
     <div className="app">
@@ -256,15 +162,7 @@ export default function App() {
             <div className="stat-divider" />
             <div className="stat"><span>AI</span><p>Powered by Claude</p></div>
             <div className="stat-divider" />
-            <button type="button" className="stat stat-button" onClick={() => setShowRecipeTrackerModal(true)}>
-              <div>
-                <span>{heroWastePct}%</span>
-                <p>Recipe tracker</p>
-              </div>
-              <div className="hero-stat">
-                <span>Track Now</span>
-              </div>
-            </button>
+            <div className="stat"><span>0%</span><p>Food waste</p></div>
           </div>
         </div>
         <div className="hero-visual">
@@ -427,7 +325,6 @@ export default function App() {
       {(recipes.length > 0 || savedRecipes.length > 0) && !loading && (
         <section className="results-section" id="results">
           <div className="results-header">
-            {/* View tabs */}
             <div className="results-tabs">
               <button
                 className={`results-tab ${resultsView === 'results' ? 'results-tab--active' : ''}`}
@@ -475,8 +372,6 @@ export default function App() {
                   index={i}
                   saved={isSaved(r)}
                   onToggleSave={toggleSave}
-                  onRecipeDone={updateWasteStats}
-                  onRecipeAbandoned={recordRecipeWaste}
                 />
               ))}
             </div>
@@ -502,26 +397,6 @@ export default function App() {
       {/* ── SHOPPING LIST MODAL ── */}
       {showShoppingList && (
         <ShoppingList recipes={recipes} onClose={() => setShowShoppingList(false)} />
-      )}
-
-      {showRecipeTrackerModal && (
-        <div className="modal-backdrop" onClick={() => setShowRecipeTrackerModal(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title-row">
-                <span>💚</span>
-                <div>
-                  <h2 className="modal-title">Food Recipe Tracker</h2>
-                  <p className="modal-sub">Completed, discarded, and consumed recipe analytics</p>
-                </div>
-              </div>
-              <button className="modal-close" onClick={() => setShowRecipeTrackerModal(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <FoodRecipeTracker stats={wasteStats} onReset={resetWasteStats} />
-            </div>
-          </div>
-        </div>
       )}
 
       <footer className="footer">

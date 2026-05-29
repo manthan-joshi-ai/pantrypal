@@ -19,7 +19,7 @@ const scaleNutr = (val, factor) => {
   return val.replace(/(\d+\.?\d*)/g, (_, n) => Math.round(parseFloat(n) * factor));
 };
 
-export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecipeDone, onRecipeAbandoned }) {
+export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   const [open, setOpen] = useState(index === 0);
   const [servings, setServings] = useState(recipe.servings || 2);
   const [cooking, setCooking] = useState(false);
@@ -210,8 +210,6 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave, onRecip
           recipe={recipe}
           servings={servings}
           onClose={() => setCooking(false)}
-          onComplete={onRecipeDone}
-          onAbandon={onRecipeAbandoned}
         />
       )}
     </>
