@@ -929,15 +929,61 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
   display: flex; align-items: center; gap: 0.75rem;
   padding: 1rem 1.5rem 0;
 }
+.rcard-dish-thumb-btn {
+  position: relative; padding: 0; border: none; background: none; cursor: pointer;
+  border-radius: 10px; flex-shrink: 0;
+}
 .rcard-dish-thumb {
   width: 80px; height: 80px; object-fit: cover;
-  border-radius: 10px; flex-shrink: 0;
+  border-radius: 10px; display: block;
   border: 2px solid var(--glass-border);
+  transition: filter 0.2s, transform 0.2s;
 }
+.rcard-dish-thumb-btn:hover .rcard-dish-thumb { filter: brightness(0.7); transform: scale(1.04); }
+.rcard-dish-thumb-zoom {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; color: #fff; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+.rcard-dish-thumb-btn:hover .rcard-dish-thumb-zoom { opacity: 1; }
 .rcard-dish-thumb-label {
   font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--text-muted);
 }
+
+/* ── LIGHTBOX ── */
+.lightbox-backdrop {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  animation: lb-in 0.18s ease;
+}
+@keyframes lb-in { from { opacity: 0; } to { opacity: 1; } }
+.lightbox-close {
+  position: absolute; top: 1.25rem; right: 1.25rem;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; border-radius: 50%; width: 2.2rem; height: 2.2rem;
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.22); }
+.lightbox-content {
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  max-width: min(560px, 100%);
+  animation: lb-scale 0.2s ease;
+}
+@keyframes lb-scale { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.lightbox-img {
+  width: 100%; max-height: 70vh; object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+.lightbox-caption {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-align: center;
+}
+.lightbox-name { font-size: 1.15rem; font-weight: 700; color: #fff; }
+.lightbox-cuisine { font-size: 0.82rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
 
 .rcard-banner {
   padding: 1.4rem 1.5rem;

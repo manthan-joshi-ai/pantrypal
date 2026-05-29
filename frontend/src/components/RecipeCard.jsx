@@ -61,10 +61,18 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   const [cooking, setCooking] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [mealImage, setMealImage] = useState(null);
+  const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
     fetchMealImage(recipe).then(url => { if (url) setMealImage(url); });
   }, []);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e) => { if (e.key === 'Escape') setLightbox(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [lightbox]);
   const grad = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
   const diff = DIFF_STYLE[recipe.difficulty] || DIFF_STYLE.Easy;
   const baseSrv = recipe.servings || 2;
@@ -150,13 +158,16 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
           <div className="rcard-body">
             {mealImage && (
               <div className="rcard-dish-thumb-wrap">
-                <img
-                  className="rcard-dish-thumb"
-                  src={mealImage}
-                  alt={recipe.name}
-                  onError={e => { e.target.closest('.rcard-dish-thumb-wrap').style.display = 'none'; }}
-                />
-                <span className="rcard-dish-thumb-label">Dish Preview</span>
+                <button className="rcard-dish-thumb-btn" onClick={() => setLightbox(true)} title="View larger">
+                  <img
+                    className="rcard-dish-thumb"
+                    src={mealImage}
+                    alt={recipe.name}
+                    onError={e => { e.target.closest('.rcard-dish-thumb-wrap').style.display = 'none'; }}
+                  />
+                  <span className="rcard-dish-thumb-zoom">⤢</span>
+                </button>
+                <span className="rcard-dish-thumb-label">Dish Preview · tap to enlarge</span>
               </div>
             )}
             <div className="rcard-cols">
@@ -263,6 +274,19 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
           servings={servings}
           onClose={() => setCooking(false)}
         />
+      )}
+
+      {lightbox && (
+        <div className="lightbox-backdrop" onClick={() => setLightbox(false)}>
+          <button className="lightbox-close" onClick={() => setLightbox(false)}>✕</button>
+          <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+            <img className="lightbox-img" src={mealImage} alt={recipe.name} />
+            <div className="lightbox-caption">
+              <span className="lightbox-name">{recipe.name}</span>
+              <span className="lightbox-cuisine">{recipe.cuisine}</span>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
