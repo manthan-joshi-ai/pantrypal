@@ -925,6 +925,20 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
   font-weight: 500;
 }
 
+.rcard-dish-thumb-wrap {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1rem 1.5rem 0;
+}
+.rcard-dish-thumb {
+  width: 80px; height: 80px; object-fit: cover;
+  border-radius: 10px; flex-shrink: 0;
+  border: 2px solid var(--glass-border);
+}
+.rcard-dish-thumb-label {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
 .rcard-banner {
   padding: 1.4rem 1.5rem;
   display: flex; align-items: center; justify-content: space-between;

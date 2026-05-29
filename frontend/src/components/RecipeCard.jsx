@@ -80,35 +80,8 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
   return (
     <>
       <div className="rcard">
-        {/* Dish image with title overlay */}
-        {mealImage ? (
-          <div className="rcard-image-wrap" onClick={() => setOpen(!open)}>
-            <img className="rcard-image" src={mealImage} alt={recipe.name}
-              onError={e => { e.target.closest('.rcard-image-wrap').remove(); }} />
-            <div className="rcard-image-overlay" />
-            <div className="rcard-image-info">
-              <div>
-                <div className="rcard-image-title">{recipe.name}</div>
-                <div className="rcard-image-cuisine">{recipe.cuisine}</div>
-              </div>
-              <div style={{ display:'flex', gap:'0.5rem', alignItems:'center' }}>
-                <button
-                  className={`rcard-save ${saved ? 'rcard-save--saved' : ''}`}
-                  onClick={e => { e.stopPropagation(); onToggleSave(recipe); }}
-                >
-                  {saved ? '❤️' : '🤍'}
-                </button>
-                <span style={{ color:'#fff', fontSize:'1rem', opacity:0.8 }}>{open ? '▲' : '▼'}</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* Fallback banner when no image yet */
-          null
-        )}
-
-        {/* Card top banner — shown always (hidden title when image present) */}
-        <div className="rcard-banner" style={{ background: grad, display: mealImage ? 'none' : undefined }} onClick={() => setOpen(!open)}>
+        {/* Card top banner */}
+        <div className="rcard-banner" style={{ background: grad }} onClick={() => setOpen(!open)}>
           <div className="rcard-banner-left">
             <span className="rcard-index">0{index + 1}</span>
             <div>
@@ -175,6 +148,17 @@ export default function RecipeCard({ recipe, index, saved, onToggleSave }) {
         {/* Expandable body */}
         {open && (
           <div className="rcard-body">
+            {mealImage && (
+              <div className="rcard-dish-thumb-wrap">
+                <img
+                  className="rcard-dish-thumb"
+                  src={mealImage}
+                  alt={recipe.name}
+                  onError={e => { e.target.closest('.rcard-dish-thumb-wrap').style.display = 'none'; }}
+                />
+                <span className="rcard-dish-thumb-label">Dish Preview</span>
+              </div>
+            )}
             <div className="rcard-cols">
 
               {/* Left col */}
