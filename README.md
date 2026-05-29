@@ -156,4 +156,4 @@ pantrypal/
 - Anthropic Claude (`claude-sonnet-4-6`) — recipes, image vision, chef chat
 - Pillow — image compression before vision analysis
 
-*Built by Team PantryPal.*
+*Built by Team PantryPal — Hackathon 2026.*
