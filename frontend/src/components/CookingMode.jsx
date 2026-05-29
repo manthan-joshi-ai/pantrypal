@@ -1,10 +1,49 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-export default function CookingMode({ recipe, servings, onClose, onComplete, onAbandon }) {
+const BASE = 'https://www.themealdb.com/api/json/v1/1';
+
+const randomMealImage = async () => {
+  const r = await fetch(`${BASE}/random.php`);
+  const d = await r.json();
+  return d.meals?.[0]?.strMealThumb || null;
+};
+
+const bestMatchImage = async (recipe) => {
+  // By recipe name keywords
+  const words = recipe.name.split(' ');
+  for (let i = words.length; i >= 1; i--) {
+    try {
+      const r = await fetch(`${BASE}/search.php?s=${encodeURIComponent(words.slice(0, i).join(' '))}`);
+      const d = await r.json();
+      if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
+    } catch { /* continue */ }
+  }
+  // By first ingredient
+  for (const ing of (recipe.ingredients_used || [])) {
+    const keyword = ing.split(' ').slice(-1)[0];
+    try {
+      const r = await fetch(`${BASE}/filter.php?i=${encodeURIComponent(keyword)}`);
+      const d = await r.json();
+      if (d.meals?.[0]?.strMealThumb) return d.meals[0].strMealThumb;
+    } catch { /* continue */ }
+  }
+  // By cuisine
+  if (recipe.cuisine) {
+    try {
+      const r = await fetch(`${BASE}/filter.php?a=${encodeURIComponent(recipe.cuisine.split(' ')[0])}`);
+      const d = await r.json();
+      if (d.meals?.length) {
+        const pick = d.meals[Math.floor(Math.random() * Math.min(5, d.meals.length))];
+        if (pick.strMealThumb) return pick.strMealThumb;
+      }
+    } catch { /* continue */ }
+  }
+  return null;
+};
+
+export default function CookingMode({ recipe, servings, onClose }) {
   const [step, setStep] = useState(0);
-  const [completed, setCompleted] = useState(false);
-  const completedRef = useRef(false);
-  const abandonedRef = useRef(false);
+  const [dishImage, setDishImage] = useState(null);
   const steps = recipe.instructions || [];
   const total = steps.length;
   const progress = total > 0 ? Math.round(((step + 1) / total) * 100) : 0;
@@ -24,8 +63,8 @@ export default function CookingMode({ recipe, servings, onClose, onComplete, onA
   const handleKey = useCallback((e) => {
     if (e.key === 'ArrowRight' && step < total - 1) setStep(s => s + 1);
     if (e.key === 'ArrowLeft' && step > 0) setStep(s => s - 1);
-    if (e.key === 'Escape') abandonRecipe();
-  }, [step, total]);
+    if (e.key === 'Escape') onClose();
+  }, [step, total, onClose]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
@@ -33,22 +72,14 @@ export default function CookingMode({ recipe, servings, onClose, onComplete, onA
   }, [handleKey]);
 
   const isDone = total > 0 && step === total - 1;
-  const finishRecipe = () => {
-    if (!completedRef.current) {
-      completedRef.current = true;
-      onComplete?.(recipe, servings);
-      setCompleted(true);
-    }
-    onClose();
-  };
 
-  const abandonRecipe = () => {
-    if (!completedRef.current && !abandonedRef.current) {
-      abandonedRef.current = true;
-      onAbandon?.(recipe, servings);
-    }
-    onClose();
-  };
+  useEffect(() => {
+    if (!isDone) return;
+    // Load a random image immediately so something always shows
+    randomMealImage().then(url => { if (url) setDishImage(url); });
+    // Then try to find a better match and replace
+    bestMatchImage(recipe).then(url => { if (url) setDishImage(url); });
+  }, [isDone]);
 
   return (
     <div className="cooking-overlay">
@@ -61,7 +92,7 @@ export default function CookingMode({ recipe, servings, onClose, onComplete, onA
             <p className="cm-servings">Serves {servings}</p>
           </div>
         </div>
-        <button className="cm-close" onClick={abandonRecipe}>Discard / Exit</button>
+        <button className="cm-close" onClick={onClose}>✕ Exit</button>
       </div>
 
       {/* Progress bar */}
@@ -89,8 +120,16 @@ export default function CookingMode({ recipe, servings, onClose, onComplete, onA
           <div className="cm-done">
             <div className="cm-done-icon">🎉</div>
             <h3>You're done! Enjoy your meal.</h3>
-            <button className="cm-finish-btn" onClick={finishRecipe}>
-              {completed ? 'Back to Recipe' : 'Mark Done'}
+            <div className="cm-final-image-wrap">
+              {dishImage
+                ? <img className="cm-final-image" src={dishImage} alt={recipe.name}
+                    onError={e => { e.target.src = ''; e.target.style.display='none'; }} />
+                : <div className="cm-final-image-placeholder">🍽</div>
+              }
+              <p className="cm-final-image-label">🍽 {recipe.name}</p>
+            </div>
+            <button className="cm-finish-btn" onClick={onClose}>
+              Back to Recipe
             </button>
           </div>
         )}
@@ -124,7 +163,7 @@ export default function CookingMode({ recipe, servings, onClose, onComplete, onA
         </div>
       )}
 
-      <p className="cm-hint">Use ← → arrow keys to navigate. Exiting before Mark Done records this recipe as discarded.</p>
+      <p className="cm-hint">Use ← → arrow keys to navigate</p>
     </div>
   );
 }

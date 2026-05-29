@@ -891,6 +891,100 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
 }
 .rcard:hover { border-color: var(--card-hover-border); box-shadow: var(--card-shadow); }
 
+.rcard-image-wrap {
+  position: relative; width: 100%; height: 240px; overflow: hidden;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer;
+}
+.rcard-image {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.5s ease;
+}
+.rcard:hover .rcard-image { transform: scale(1.06); }
+.rcard-image-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.05) 0%,
+    rgba(0,0,0,0.15) 40%,
+    rgba(0,0,0,0.75) 100%
+  );
+}
+.rcard-image-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 1rem 1.25rem;
+  display: flex; align-items: flex-end; justify-content: space-between;
+}
+.rcard-image-title {
+  font-size: 1.2rem; font-weight: 900; color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  line-height: 1.25; margin-bottom: 0.2rem;
+}
+.rcard-image-cuisine {
+  font-size: 0.75rem; color: rgba(255,255,255,0.75);
+  font-weight: 500;
+}
+
+.rcard-dish-thumb-wrap {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 1rem 1.5rem 0;
+}
+.rcard-dish-thumb-btn {
+  position: relative; padding: 0; border: none; background: none; cursor: pointer;
+  border-radius: 10px; flex-shrink: 0;
+}
+.rcard-dish-thumb {
+  width: 80px; height: 80px; object-fit: cover;
+  border-radius: 10px; display: block;
+  border: 2px solid var(--glass-border);
+  transition: filter 0.2s, transform 0.2s;
+}
+.rcard-dish-thumb-btn:hover .rcard-dish-thumb { filter: brightness(0.7); transform: scale(1.04); }
+.rcard-dish-thumb-zoom {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; color: #fff; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+.rcard-dish-thumb-btn:hover .rcard-dish-thumb-zoom { opacity: 1; }
+.rcard-dish-thumb-label {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+/* ── LIGHTBOX ── */
+.lightbox-backdrop {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  animation: lb-in 0.18s ease;
+}
+@keyframes lb-in { from { opacity: 0; } to { opacity: 1; } }
+.lightbox-close {
+  position: absolute; top: 1.25rem; right: 1.25rem;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; border-radius: 50%; width: 2.2rem; height: 2.2rem;
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.22); }
+.lightbox-content {
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  max-width: min(560px, 100%);
+  animation: lb-scale 0.2s ease;
+}
+@keyframes lb-scale { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.lightbox-img {
+  width: 100%; max-height: 70vh; object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+.lightbox-caption {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-align: center;
+}
+.lightbox-name { font-size: 1.15rem; font-weight: 700; color: #fff; }
+.lightbox-cuisine { font-size: 0.82rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
+
 .rcard-banner {
   padding: 1.4rem 1.5rem;
   display: flex; align-items: center; justify-content: space-between;
@@ -1350,6 +1444,27 @@ html[data-theme="light"] .error-toast { color: #b91c1c; }
 }
 .cm-done-icon { font-size: 4rem; margin-bottom: 1rem; }
 .cm-done h3 { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: 1.25rem; }
+.cm-final-image-wrap {
+  width: 100%; max-width: 420px; margin: 0 auto 1.5rem;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.cm-final-image {
+  width: 100%; height: 240px; object-fit: cover; display: block;
+  animation: fadeInUp 0.6s ease;
+}
+.cm-final-image-placeholder {
+  width: 100%; height: 240px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem;
+  background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(0,196,140,0.1));
+}
+.cm-final-image-label {
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+  color: #fff; font-size: 0.85rem; font-weight: 700;
+  padding: 0.5rem 1rem; text-align: center;
+}
 .cm-finish-btn {
   padding: 0.75rem 2rem; border-radius: var(--radius-sm);
   background: var(--green); border: none; color: #fff;
