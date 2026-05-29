@@ -21,7 +21,6 @@ PantryPal is a full-stack AI web app that takes what's already in your kitchen, 
 | 👤 **Serving Adjuster** | Scale 1–12 servings; nutrition recalculates automatically |
 | 👨‍🍳 **Cooking Mode** | Full-screen step-by-step view, progress bar, screen stay-awake |
 | 💬 **Chef Chat** | Ask follow-up questions or get tips from the AI chef |
-| 📊 **Recipe Tracker** | Weekly/monthly/yearly charts of completed vs discarded recipes |
 | ❤️ **Save Favourites** | Heart any recipe; revisit from the Saved tab |
 | 🛒 **Shopping List** | One-click list of missing ingredients with copy-to-clipboard |
 | 🌙 **Dark / Light Theme** | Toggle anytime from the header |
@@ -95,7 +94,6 @@ pantrypal/
 │           ├── RecipeCard.jsx
 │           ├── CookingMode.jsx
 │           ├── ChefChat.jsx
-│           ├── FoodRecipeTracker.jsx
 │           └── ShoppingList.jsx
 ├── SETUP.md                 # Full local setup guide
 ├── PRESENTATION.html        # Hackathon pitch deck
