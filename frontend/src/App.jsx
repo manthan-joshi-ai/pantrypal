@@ -261,9 +261,6 @@ export default function App() {
                 <span>{heroWastePct}%</span>
                 <p>Recipe tracker</p>
               </div>
-              <div className="hero-stat">
-                <span>Track Now</span>
-              </div>
             </button>
           </div>
         </div>

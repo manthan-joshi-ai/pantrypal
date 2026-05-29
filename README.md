@@ -32,9 +32,6 @@ PantryPal is a full-stack AI web app. Users can type ingredients or upload a pan
 ## Favourites
 <img width="1710" height="1107" alt="favourites-recipies" src="https://github.com/user-attachments/assets/333d7251-bb14-40bf-9c82-5c2af70df471" />
 
-## Food Recipe Tracker
-<img width="1710" height="1107" alt="food-recipe-tracker" src="https://github.com/user-attachments/assets/135b3d59-5a14-4d92-8c98-7e76fe14e096" />
-
 ## AI Chef Bot
 <img width="1710" height="1107" alt="chef-chatbot" src="https://github.com/user-attachments/assets/3de47a0d-7d07-4c98-a182-9e93516291bd" />
 
